@@ -23,9 +23,8 @@ const Leaderboard = () => {
     const modes = [
         { id: 'all', name: 'All Modes' },
         { id: 'motion', name: 'Motion Training' },
-        { id: 'blocking', name: 'Blocking Practice' },
-        { id: 'punishing', name: 'Punish Training' },
-        { id: 'combos', name: 'Combo Training' }
+        { id: 'combos', name: 'Combo Training' },
+        { id: 'custom', name: 'Custom Challenge' }
     ]
 
     const difficulties = [

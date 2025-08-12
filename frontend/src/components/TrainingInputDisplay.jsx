@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useGameStore } from '../stores/gameStore'
 import { useTrainingStore } from '../stores/trainingStore'
 import { useInputButtons } from '../hooks/useInputButtons'
@@ -6,8 +6,8 @@ import { useSettingsStore } from '../stores/settingsStore'
 import './TrainingInputDisplay.css'
 
 const TrainingInputDisplay = () => {
-  const { currentSession } = useTrainingStore()
-  const { updateSessionScore } = useTrainingStore()
+  const { currentSession, updateSessionScore, endTrainingSession } = useTrainingStore()
+  const { addInput } = useGameStore()
   const trainingMode = currentSession?.mode || 'motion'
   const difficulty = currentSession?.difficulty || 'medium'
   const inputButtons = useInputButtons()
@@ -18,16 +18,28 @@ const TrainingInputDisplay = () => {
   const [isCompleted, setIsCompleted] = useState(false)
   const [showFeedback, setShowFeedback] = useState(null) // 'success' or 'fail'
   const [pointsEarned, setPointsEarned] = useState(0)
+  const [forceUpdate, setForceUpdate] = useState(0) // Force re-render when needed
   const timerRef = useRef(null)
+  const timeoutRef = useRef(null)
   const inputStartTimeRef = useRef(null)
   const inputStartCountRef = useRef(0)
+  const processingSuccessRef = useRef(false)
+  const timeoutTriggeredRef = useRef(false)
+  const startNewInputCallCount = useRef(0)
+  const timeoutCount = useRef(0)
 
   // Difficulty-based timing (in milliseconds)
   const getDifficultyTiming = () => {
+    // If custom mode and custom timing is set, use that
+    if (trainingMode === 'custom' && currentSession?.customTiming) {
+      return currentSession.customTiming
+    }
+    
+    // Otherwise use standard difficulty timing
     switch (difficulty.toLowerCase()) {
       case 'easy': return 3000 // 3 seconds
       case 'medium': return 2000 // 2 seconds  
-      case 'hard': return 1200 // 1.2 seconds
+      case 'hard': return 1000 // 1 second
       default: return 2000
     }
   }
@@ -43,6 +55,9 @@ const TrainingInputDisplay = () => {
 
   const activeAttackButtons = getActiveAttackButtons()
 
+  // Memoize inputButtons to prevent unnecessary useEffect re-runs
+  const stableInputButtons = useMemo(() => inputButtons, [inputButtons])
+
   // Training patterns based on the backend
   const trainingPatterns = {
     motion: [
@@ -55,26 +70,30 @@ const TrainingInputDisplay = () => {
       [activeAttackButtons[0]], // first attack
       [activeAttackButtons[1]], // second attack
     ],
-    blocking: [
-      [inputButtons.block], // block
-      [inputButtons.left, inputButtons.block], // left + block
-      [inputButtons.right, inputButtons.block], // right + block
-      [inputButtons.up, inputButtons.block], // up + block
-      [inputButtons.down, inputButtons.block], // down + block
-    ],
-    punishing: [
-      [activeAttackButtons[0]], // single attack
-      [activeAttackButtons[1]], // single attack
-      [activeAttackButtons[0], activeAttackButtons[0]], // double first attack
-      [activeAttackButtons[1], activeAttackButtons[1]], // double second attack
-      [activeAttackButtons[0], activeAttackButtons[1]], // first + second attack
-    ],
     combos: [
       [activeAttackButtons[0], activeAttackButtons[0]], // double attack
       [activeAttackButtons[0], activeAttackButtons[1]], // first + second
       [activeAttackButtons[1], activeAttackButtons[0]], // second + first
       [activeAttackButtons[0], activeAttackButtons[0], activeAttackButtons[0]], // triple first attack
       [inputButtons.up, activeAttackButtons[0]], // up + attack
+    ],
+    custom: [
+      // Mixed patterns for custom challenge
+      [inputButtons.up], // up
+      [inputButtons.down], // down
+      [inputButtons.left], // left
+      [inputButtons.right], // right
+      [activeAttackButtons[0]], // first attack
+      [activeAttackButtons[1]], // second attack
+      [inputButtons.up, activeAttackButtons[0]], // up + attack
+      [inputButtons.down, activeAttackButtons[0]], // down + attack
+      [inputButtons.left, activeAttackButtons[0]], // left + attack
+      [inputButtons.right, activeAttackButtons[0]], // right + attack
+      [activeAttackButtons[0], activeAttackButtons[0]], // double attack
+      [activeAttackButtons[0], activeAttackButtons[1]], // attack + attack
+      [inputButtons.up, inputButtons.down], // up + down
+      [inputButtons.left, inputButtons.right], // left + right
+      [inputButtons.up, activeAttackButtons[0], inputButtons.down], // up + attack + down
     ]
   }
 
@@ -102,6 +121,23 @@ const TrainingInputDisplay = () => {
 
   // Start new input sequence
   const startNewInput = () => {
+    // Prevent multiple simultaneous calls
+    if (processingSuccessRef.current) {
+      console.log('❌ startNewInput blocked - already processing success')
+      return
+    }
+    
+    startNewInputCallCount.current += 1
+    console.log('🔄 startNewInput called (call #' + startNewInputCallCount.current + ')', {
+      trainingMode,
+      attackButtonMode,
+      inputButtons,
+      currentInput: currentInput.length,
+      isCompleted,
+      processingSuccessRef: processingSuccessRef.current,
+      timeoutTriggeredRef: timeoutTriggeredRef.current
+    })
+
     const patterns = trainingPatterns[trainingMode] || trainingPatterns.motion
     const randomIndex = Math.floor(Math.random() * patterns.length)
     const selectedPattern = patterns[randomIndex]
@@ -121,6 +157,8 @@ const TrainingInputDisplay = () => {
     setIsCompleted(false)
     setShowFeedback(null)
     setPointsEarned(0)
+    processingSuccessRef.current = false  // Reset processing flag for new input
+    timeoutTriggeredRef.current = false  // Reset timeout flag for new input
 
     // Start timer
     const timing = getDifficultyTiming()
@@ -131,38 +169,83 @@ const TrainingInputDisplay = () => {
 
     // Clear any existing timer
     if (timerRef.current) {
+      console.log('⏹️ Clearing existing timer before starting new one')
       clearInterval(timerRef.current)
+      timerRef.current = null
+    }
+    
+    // Also clear any pending timeouts
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
     }
 
     // Start countdown timer
+    console.log('⏱️ Starting new timer with timing:', timing)
     timerRef.current = setInterval(() => {
       setTimeRemaining(prev => {
-        if (prev <= 100) {
+        const newTime = prev - 100
+        console.log('⏱️ Timer tick:', { prev, newTime, willTimeout: newTime <= 100, timerId: timerRef.current })
+        
+        if (newTime <= 100) {
           // Time's up - mark as failed
-          clearInterval(timerRef.current)
-          handleInputTimeout()
+          console.log('⏰ Timer reached 0, calling handleInputTimeout')
+          if (timerRef.current) {
+            clearInterval(timerRef.current)
+            timerRef.current = null
+          }
+          // Use timeoutRef to ensure this only runs once
+          if (!timeoutRef.current) {
+            timeoutRef.current = setTimeout(() => {
+              handleInputTimeout()
+              timeoutRef.current = null
+            }, 0)
+          }
           return 0
         }
-        return prev - 100
+        return newTime
       })
     }, 100)
   }
 
   useEffect(() => {
-    startNewInput()
+    console.log('🔄 useEffect triggered for startNewInput', {
+      trainingMode,
+      attackButtonMode,
+      stableInputButtons: Object.keys(stableInputButtons)
+    })
+    
+    // Only start new input if we're not already processing
+    if (!processingSuccessRef.current) {
+      startNewInput()
+    }
 
     // Cleanup timer on unmount
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current)
       }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
     }
-  }, [trainingMode, attackButtonMode, inputButtons])
+  }, [trainingMode, attackButtonMode]) // Removed stableInputButtons dependency
 
   // Handle successful input completion
   const handleInputSuccess = () => {
-    if (isCompleted) return
+    console.log('🎯 handleInputSuccess called', {
+      isCompleted,
+      processingSuccessRef: processingSuccessRef.current,
+      timeoutTriggeredRef: timeoutTriggeredRef.current,
+      timeRemaining
+    })
 
+    if (isCompleted || processingSuccessRef.current || timeoutTriggeredRef.current) {
+      console.log('❌ Success ignored - already completed, processing, or timeout triggered')
+      return
+    }
+
+    processingSuccessRef.current = true
     setIsCompleted(true)
     setShowFeedback('success')
 
@@ -170,6 +253,15 @@ const TrainingInputDisplay = () => {
     if (timerRef.current) {
       clearInterval(timerRef.current)
     }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
+    }
+
+    // Add each input from the successful sequence to the game store for combo tracking
+    currentInput.forEach(input => {
+      addInput(input)
+    })
 
     // Calculate completion time and points
     const completionTime = Date.now() - inputStartTimeRef.current
@@ -221,14 +313,25 @@ const TrainingInputDisplay = () => {
 
     // Start new input after delay
     setTimeout(() => {
+      processingSuccessRef.current = false  // Reset the processing flag
       startNewInput()
     }, 1500)
   }
 
   // Handle input timeout
   const handleInputTimeout = () => {
-    if (isCompleted) return
+    timeoutCount.current += 1
+    console.log('🕐 TIMEOUT TRIGGERED! (timeout #' + timeoutCount.current + ')', {
+      isCompleted,
+      currentSession: currentSession?.score,
+      currentInput,
+      timeoutTriggeredRef: timeoutTriggeredRef.current
+    })
 
+    if (isCompleted) {
+      console.log('❌ Timeout ignored - already completed')
+      return
+    }
     setIsCompleted(true)
     setShowFeedback('fail')
 
@@ -241,19 +344,31 @@ const TrainingInputDisplay = () => {
       accuracy: (currentScore.correctInputs / (currentScore.totalInputs + 1)) * 100
     }
 
+    console.log('📊 Updating score on timeout:', {
+      currentScore,
+      newScore,
+      difference: {
+        totalInputs: newScore.totalInputs - currentScore.totalInputs,
+        correctInputs: newScore.correctInputs - currentScore.correctInputs
+      }
+    })
+
     updateSessionScore(newScore)
 
-    console.log('Input timed out!', { newScore })
+    console.log('✅ Score updated after timeout!', { newScore })
 
     // Start new input after delay
     setTimeout(() => {
+      console.log('🔄 Starting new input after timeout delay (timeout #' + timeoutCount.current + ')')
+      // Reset the timeout flag before starting new input
+      timeoutTriggeredRef.current = false
       startNewInput()
-    }, 1500)
+    }, 500) // Reduced from 1500ms to 500ms
   }
 
   // Check if current input sequence is completed
   useEffect(() => {
-    if (currentInput.length === 0 || inputs.length === 0 || isCompleted) return
+    if (currentInput.length === 0 || inputs.length === 0 || isCompleted || processingSuccessRef.current) return
 
     // Only consider inputs that occurred after this sequence started
     const newInputs = inputs.slice(inputStartCountRef.current)
@@ -367,6 +482,68 @@ const TrainingInputDisplay = () => {
     setInputIndex(progressIndex)
   }, [inputs, currentInput])
 
+  // Monitor session score changes for debugging
+  useEffect(() => {
+    if (currentSession?.score) {
+      console.log('📊 Session score updated:', {
+        totalInputs: currentSession.score.totalInputs,
+        correctInputs: currentSession.score.correctInputs,
+        targetInputs: currentSession.targetInputs,
+        progress: `${currentSession.score.totalInputs}/${currentSession.targetInputs}`,
+        timestamp: Date.now()
+      })
+      // Force re-render to ensure UI updates
+      setForceUpdate(prev => prev + 1)
+    }
+  }, [currentSession?.score?.totalInputs, currentSession?.score?.correctInputs])
+
+  // Check if training should end immediately when progress exceeds target
+  useEffect(() => {
+    if (!currentSession) return
+    
+    const currentProgress = currentSession.score?.totalInputs || 0
+    const targetInputs = currentSession.targetInputs || 10
+    
+    console.log('📊 Progress check:', {
+      currentProgress,
+      targetInputs,
+      willEnd: currentProgress >= targetInputs,
+      isCompleted,
+      timeoutTriggeredRef: timeoutTriggeredRef.current,
+      timeoutCount: timeoutCount.current
+    })
+    
+    if (currentProgress >= targetInputs && !isCompleted) {
+      // End training session when progress reaches or exceeds target
+      console.log('🎯 Training target reached! Ending session.', {
+        currentProgress,
+        targetInputs,
+        isCompleted
+      })
+      
+      setIsCompleted(true)
+      setShowFeedback('success')
+      
+      // Clear timer
+      if (timerRef.current) {
+        console.log('⏹️ Clearing timer due to completion')
+        clearInterval(timerRef.current)
+        timerRef.current = null
+      }
+      if (timeoutRef.current) {
+        console.log('⏹️ Clearing timeout due to completion')
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
+      
+      // End session after delay
+      setTimeout(() => {
+        console.log('🏁 Ending training session')
+        endTrainingSession(currentSession.score)
+      }, 1000)
+    }
+  }, [currentSession?.score?.totalInputs, currentSession?.targetInputs, currentSession, endTrainingSession, isCompleted])
+
   const getInputDisplay = (input) => {
     return inputLabels[input] || input.toUpperCase()
   }
@@ -382,20 +559,32 @@ const TrainingInputDisplay = () => {
         <span className="difficulty-badge">{difficulty}</span>
       </div>
 
-      {/* Progress Bar */}
-      <div className="progress-container">
-        <div className="progress-label">
-          Progress: {currentSession?.score?.totalInputs || 0} / {currentSession?.targetInputs || 10}
-        </div>
-        <div className="progress-bar">
-          <div
-            className="progress-fill"
-            style={{
-              width: `${((currentSession?.score?.totalInputs || 0) / (currentSession?.targetInputs || 10)) * 100}%`
-            }}
-          />
-        </div>
-      </div>
+             {/* Progress Bar */}
+       <div className="progress-container">
+         <div className="progress-label">
+           Progress: {currentSession?.score?.totalInputs || 0} / {currentSession?.targetInputs || 10}
+           {process.env.NODE_ENV === 'development' && (
+             <span style={{ fontSize: '12px', color: '#666', marginLeft: '10px' }}>
+               (Debug: {JSON.stringify({
+                 totalInputs: currentSession?.score?.totalInputs,
+                 targetInputs: currentSession?.targetInputs,
+                 customTiming: currentSession?.customTiming,
+                 forceUpdate,
+                 timeoutCount: timeoutCount.current,
+                 startNewInputCalls: startNewInputCallCount.current
+               })})
+             </span>
+           )}
+         </div>
+         <div className="progress-bar">
+           <div
+             className="progress-fill"
+             style={{
+               width: `${Math.min(((currentSession?.score?.totalInputs || 0) / (currentSession?.targetInputs || 10)) * 100, 100)}%`
+             }}
+           />
+         </div>
+       </div>
 
       {/* Timer Bar */}
       <div className="timer-container">
@@ -429,18 +618,42 @@ const TrainingInputDisplay = () => {
       {/* Feedback Display */}
       {showFeedback && (
         <div className={`feedback-message ${showFeedback}`}>
-          {showFeedback === 'success' ? (
-            <>
-              <span className="feedback-icon">✓</span>
-              <span className="feedback-text">Perfect! +{pointsEarned} Points</span>
-            </>
-          ) : (
-            <>
-              <span className="feedback-icon">✗</span>
-              <span className="feedback-text">Time's Up!</span>
-            </>
+          {showFeedback === 'success' && (
+            <div>
+              <span className="success-icon">✅</span>
+              <span>Correct! +{pointsEarned} points</span>
+            </div>
+          )}
+          {showFeedback === 'fail' && (
+            <div>
+              <span className="fail-icon">❌</span>
+              <span>Time's up!</span>
+            </div>
           )}
         </div>
+      )}
+
+      {/* Debug button for testing timeout */}
+      {process.env.NODE_ENV === 'development' && (
+        <button 
+          onClick={() => {
+            console.log('🧪 Manual timeout test triggered')
+            handleInputTimeout()
+          }}
+          style={{
+            position: 'absolute',
+            top: '10px',
+            right: '10px',
+            background: '#ff6b6b',
+            color: 'white',
+            border: 'none',
+            padding: '5px 10px',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Test Timeout
+        </button>
       )}
     </div>
   )

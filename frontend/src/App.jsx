@@ -7,6 +7,13 @@ import Leaderboard from './components/Leaderboard'
 import { useSettingsStore } from './stores/settingsStore'
 import './App.css'
 
+// Import test functions for debugging
+import './test/timer-test'
+import './test/progress-test'
+import './test/wrong-input-test'
+import './test/timeout-test'
+import './test/training-completion-test'
+
 function App() {
   const { theme } = useSettingsStore()
 

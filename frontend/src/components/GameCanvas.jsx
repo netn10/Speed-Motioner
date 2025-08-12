@@ -20,7 +20,10 @@ const GameCanvas = () => {
     score,
     setGameState,
     addInput,
-    resetGame
+    addInputForTracking,
+    resetGame,
+    startSession,
+    updateTimer
   } = useGameStore()
 
   const {
@@ -28,7 +31,8 @@ const GameCanvas = () => {
     isTraining,
     endTrainingSession,
     updateSessionScore,
-    addSessionInput
+    addSessionInput,
+    updateSessionTimer
   } = useTrainingStore()
 
   const socket = useSocket()
@@ -37,6 +41,7 @@ const GameCanvas = () => {
   const { isConnected: gamepadConnected, setInputCallback } = useGamepad()
 
   const [showEndDialog, setShowEndDialog] = useState(false)
+  const [completedSession, setCompletedSession] = useState(null)
   const previousScoreRef = useRef(null)
 
   // Initialize game state when component mounts
@@ -45,16 +50,58 @@ const GameCanvas = () => {
     console.log('Training state on mount:', { isTraining, currentSession })
     console.log('LocalStorage training data:', localStorage.getItem('speed-motioner-training'))
 
-    setGameState('playing')
-
-    // Only reset game if there's no active training session
-    if (!isTraining || !currentSession) {
-      console.log('No active training session, resetting game')
-      resetGame()
+    // Only start playing if there's an active training session
+    if (isTraining && currentSession) {
+      console.log('Active training session found, starting game')
+      setGameState('playing')
+      startSession()
     } else {
-      console.log('Active training session found, preserving state')
+      console.log('No active training session, showing start screen')
+      setGameState('menu')
+      resetGame()
     }
-  }, [setGameState, resetGame, isTraining, currentSession])
+  }, [setGameState, resetGame, isTraining, currentSession, startSession])
+
+  // Real-time timer effect - updates every second
+  useEffect(() => {
+    if (gameState !== 'playing') return
+
+    const timerInterval = setInterval(() => {
+      if (isTraining && currentSession) {
+        updateSessionTimer()
+      } else {
+        updateTimer()
+      }
+    }, 1000) // Update every second
+
+    return () => clearInterval(timerInterval)
+  }, [gameState, isTraining, updateTimer, updateSessionTimer])
+
+  // Monitor when training session ends and show dialog
+  useEffect(() => {
+    if (!isTraining && currentSession === null && showEndDialog === false) {
+      // Training session just ended, show the end dialog
+      // We need to get the completed session from the sessions array
+      const { sessions } = useTrainingStore.getState()
+      const lastSession = sessions[0] // Most recent session
+      console.log('🔍 Training session ended, checking for completed session:', {
+        sessionsCount: sessions.length,
+        lastSession: lastSession ? {
+          id: lastSession.id,
+          score: lastSession.score
+        } : null,
+        completedSession: completedSession ? {
+          id: completedSession.id,
+          score: completedSession.score
+        } : null
+      })
+      if (lastSession && !completedSession) {
+        console.log('✅ Setting completed session and showing dialog')
+        setCompletedSession(lastSession)
+        setShowEndDialog(true)
+      }
+    }
+  }, [isTraining, currentSession, showEndDialog, completedSession])
 
   useEffect(() => {
     if (socket) {
@@ -187,28 +234,26 @@ const GameCanvas = () => {
 
   // Handle input tracking for training session
   const handleInputForTraining = (input) => {
-    addInput(input)
+    // For training mode, track inputs for wrong input detection but don't score them
     if (isTraining && currentSession) {
-      addSessionInput(input)
-
-      // Check if training session should end
-      const newTotalInputs = (currentSession.score.totalInputs || 0) + 1
-      const targetInputs = currentSession.targetInputs || 10
-
-      if (newTotalInputs >= targetInputs) {
-        // End training session automatically
-        setTimeout(() => {
-          handleEndTraining()
-        }, 500) // Small delay to show the final input
-      }
+      // Add input to gameStore for tracking only (TrainingInputDisplay needs this for wrong input detection)
+      // The scoring will be handled separately by TrainingInputDisplay
+      addInputForTracking(input)
+    } else {
+      // For free play mode, track all inputs normally
+      addInput(input)
     }
+    // TrainingInputDisplay component will handle all training scoring and ending the session when progress reaches target
   }
 
   // Handle ending training session
   const handleEndTraining = () => {
     if (isTraining && currentSession) {
-      endTrainingSession(currentSession.score)
-      setShowEndDialog(true)
+      const completedSession = endTrainingSession(currentSession.score)
+      if (completedSession) {
+        setCompletedSession(completedSession)
+        setShowEndDialog(true)
+      }
     } else {
       navigate('/')
     }
@@ -216,11 +261,13 @@ const GameCanvas = () => {
 
   const handleViewLeaderboard = () => {
     setShowEndDialog(false)
+    setCompletedSession(null)
     navigate('/leaderboard')
   }
 
   const handleBackToMenu = () => {
     setShowEndDialog(false)
+    setCompletedSession(null)
     navigate('/')
   }
 
@@ -232,61 +279,105 @@ const GameCanvas = () => {
         <TrainingInputDisplay />
       )}
 
-      <div className="game-main-layout">
-        <div className="game-stats-panel">
-          <ScoreDisplay score={isTraining && currentSession ? currentSession.score : score} />
-          {isTraining && currentSession && (
-            <div className="training-info">
-              <h3>Training Session</h3>
-              <p>Mode: {String(currentSession.mode || 'Unknown')}</p>
-              <p>Difficulty: {String(currentSession.difficulty || 'Unknown')}</p>
-              <p>Duration: {Math.floor((Date.now() - (currentSession.startTime || Date.now())) / 1000)}s</p>
+      {gameState === 'menu' && !isTraining ? (
+        // Start screen when no training session is active
+        <div className="game-start-screen">
+          <div className="start-screen-content">
+            <h2>Welcome to Speed Motioner</h2>
+            <p>Ready to improve your fighting game skills?</p>
+            <div className="start-screen-buttons">
+              <button 
+                className="start-training-btn"
+                onClick={() => navigate('/')}
+              >
+                Start Training
+              </button>
+              <button 
+                className="free-play-btn"
+                onClick={() => setGameState('playing')}
+              >
+                Free Play Mode
+              </button>
             </div>
-          )}
-          {!isTraining && (
-            <div className="game-info">
-              <h3>Free Play Mode</h3>
-              <p>Press keys to practice inputs</p>
-              <p>Game State: {String(gameState)}</p>
-            </div>
-          )}
+          </div>
         </div>
+      ) : (
+        // Game interface when playing
+        <div className="game-main-layout">
+          <div className="game-stats-panel">
+            <ScoreDisplay score={isTraining && currentSession ? currentSession.score : score} />
+            {isTraining && currentSession && (
+              <div className="training-info">
+                <h3>Training Session</h3>
+                <p>Mode: {String(currentSession.mode || 'Unknown')}</p>
+                <p>Difficulty: {String(currentSession.difficulty || 'Unknown')}</p>
+                <p>Duration: {currentSession.score.timeElapsed || 0}s</p>
+              </div>
+            )}
+            {!isTraining && (
+              <div className="game-info">
+                <h3>Free Play Mode</h3>
+                <p>Press keys to practice inputs</p>
+                <p>Game State: {String(gameState)}</p>
+              </div>
+            )}
+          </div>
 
-        <div className="game-center-area">
-          <InputDisplay inputs={inputs} />
+          <div className="game-center-area">
+            <InputDisplay inputs={inputs} />
+          </div>
+
+          <div className="game-controls">
+            {!isTraining && (
+              <button 
+                className="start-training-btn"
+                onClick={() => navigate('/')}
+              >
+                Start Training
+              </button>
+            )}
+            <button onClick={handleEndTraining}>
+              {isTraining ? 'End Training' : 'Back to Menu'}
+            </button>
+          </div>
         </div>
+      )}
 
-        <div className="game-controls">
-          <button onClick={handleEndTraining}>
-            {isTraining ? 'End Training' : 'Back to Menu'}
-          </button>
-        </div>
-      </div>
-
-      {showEndDialog && (
+      {showEndDialog && completedSession && (
         <div className="end-session-dialog">
           <div className="dialog-content">
             <h2>Training Complete!</h2>
+            {process.env.NODE_ENV === 'development' && (
+              <div style={{ fontSize: '12px', color: '#666', marginBottom: '10px' }}>
+                Debug: {JSON.stringify({
+                  points: completedSession.score?.points,
+                  accuracy: completedSession.score?.accuracy,
+                  maxCombo: completedSession.score?.maxCombo,
+                  totalInputs: completedSession.score?.totalInputs,
+                  timeElapsed: completedSession.score?.timeElapsed
+                })}
+              </div>
+            )}
             <div className="session-results">
               <div className="result-item points">
                 <span className="result-label">Total Points:</span>
-                <span className="result-value">{(currentSession?.score?.points || 0).toLocaleString()}</span>
+                <span className="result-value">{(completedSession.score?.points || 0).toLocaleString()}</span>
               </div>
               <div className="result-item">
                 <span className="result-label">Accuracy:</span>
-                <span className="result-value">{(currentSession?.score?.accuracy || 0).toFixed(1)}%</span>
+                <span className="result-value">{(completedSession.score?.accuracy || 0).toFixed(1)}%</span>
               </div>
               <div className="result-item">
                 <span className="result-label">Max Combo:</span>
-                <span className="result-value">{currentSession?.score?.maxCombo || 0}</span>
+                <span className="result-value">{completedSession.score?.maxCombo || 0}</span>
               </div>
               <div className="result-item">
                 <span className="result-label">Total Inputs:</span>
-                <span className="result-value">{currentSession?.score?.totalInputs || 0}</span>
+                <span className="result-value">{completedSession.score?.totalInputs || 0}</span>
               </div>
               <div className="result-item">
                 <span className="result-label">Duration:</span>
-                <span className="result-value">{Math.floor(currentSession?.score?.timeElapsed || 0)}s</span>
+                <span className="result-value">{Math.floor(completedSession.score?.timeElapsed || 0)}s</span>
               </div>
             </div>
             <div className="dialog-actions">

@@ -78,6 +78,80 @@
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
+.start-training-btn {
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%) !important;
+  font-size: 1.1rem;
+  padding: 1rem 2rem !important;
+  border-radius: 12px !important;
+  box-shadow: 0 6px 15px rgba(76, 175, 80, 0.3) !important;
+}
+
+.start-training-btn:hover {
+  background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%) !important;
+  box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4) !important;
+}
+
+/* Start Screen Styles */
+.game-start-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  width: 100%;
+}
+
+.start-screen-content {
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  padding: 3rem;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  text-align: center;
+  max-width: 500px;
+  width: 90%;
+}
+
+.start-screen-content h2 {
+  margin: 0 0 1rem 0;
+  font-size: 2.5rem;
+  color: #4CAF50;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.start-screen-content p {
+  margin: 0 0 2rem 0;
+  font-size: 1.2rem;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+.start-screen-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.free-play-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white;
+  border: none;
+  padding: 1rem 2rem !important;
+  border-radius: 12px !important;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1.1rem;
+  box-shadow: 0 6px 15px rgba(102, 126, 234, 0.3) !important;
+}
+
+.free-play-btn:hover {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4) !important;
+}
+
 .game-stage {
   border-radius: 15px;
   overflow: hidden;
@@ -119,7 +193,25 @@
   .game-stage {
     max-width: 100%;
   }
+  
+  .start-screen-content {
+    padding: 2rem;
+  }
+  
+  .start-screen-content h2 {
+    font-size: 2rem;
+  }
+  
+  .start-screen-buttons {
+    flex-direction: column;
+  }
+  
+  .start-training-btn,
+  .free-play-btn {
+    width: 100%;
+  }
 }
+
 .training-info,
 .game-info {
   margin-top: 1rem;

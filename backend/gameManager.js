@@ -32,29 +32,34 @@ export class GameManager {
         ['up', 'down', 'j'], // arrow up + down + attack
         ['left', 'right', 'j'], // arrow left + right + attack
       ],
-      blocking: [
-        ['l'], // block
-        ['a', 'l'], // left + block
-        ['d', 'l'], // right + block
-        ['w', 'l'], // up + block
-        ['s', 'l'], // down + block
-        ['left', 'l'], // arrow left + block
-        ['right', 'l'], // arrow right + block
-        ['up', 'l'], // arrow up + block
-        ['down', 'l'], // arrow down + block
-      ],
-      punishing: [
-        ['j', 'j'], // double attack
-        ['k', 'k'], // double special
-        ['j', 'k'], // attack + special
-        ['k', 'j'], // special + attack
-      ],
       combos: [
         ['j', 'j', 'j'], // triple attack
         ['j', 'k', 'j'], // attack + special + attack
         ['k', 'j', 'k'], // special + attack + special
         ['w', 'j', 's', 'j'], // up attack + down attack
         ['up', 'j', 'down', 'j'], // arrow up attack + down attack
+      ],
+      custom: [
+        ['w'], // up
+        ['s'], // down
+        ['a'], // left
+        ['d'], // right
+        ['up'], // arrow up
+        ['down'], // arrow down
+        ['left'], // arrow left
+        ['right'], // arrow right
+        ['j'], // attack
+        ['k'], // special
+        ['w', 'j'], // up + attack
+        ['s', 'j'], // down + attack
+        ['a', 'j'], // left + attack
+        ['d', 'j'], // right + attack
+        ['j', 'j'], // double attack
+        ['j', 'k'], // attack + special
+        ['w', 's'], // up + down
+        ['a', 'd'], // left + right
+        ['w', 'j', 's'], // up + attack + down
+        ['a', 'j', 'd'], // left + attack + right
       ]
     }
     
@@ -128,15 +133,24 @@ export class GameManager {
     // Update combo tracking
     player.currentCombo.push(key)
     
-    // Check if combo is valid
+    // Check if combo is valid (matches expected patterns)
     const isValidCombo = this.checkComboValidity(player.currentCombo, player.trainingMode)
     
-    // Update combo count
+    // Update combo count - only increment when user correctly performs expected sequence
     if (isValidCombo) {
+      // This means the user correctly performed a complete expected input sequence
       player.comboCount++
       player.maxCombo = Math.max(player.maxCombo, player.comboCount)
+      // Reset current combo after successful completion
+      player.currentCombo = []
     } else {
-      player.comboCount = 1
+      // Check if the current input is part of a valid pattern in progress
+      const isPartialMatch = this.checkPartialComboValidity(player.currentCombo, player.trainingMode)
+      if (!isPartialMatch) {
+        // Reset combo if input doesn't match any expected pattern
+        player.currentCombo = [key]
+        player.comboCount = 0
+      }
     }
     
     // Update score
@@ -153,7 +167,7 @@ export class GameManager {
     // Reset combo if too much time has passed
     if (timeDiff > settings.comboWindow) {
       player.currentCombo = [key]
-      player.comboCount = 1
+      player.comboCount = 0
     }
     
     this.players.set(playerId, player)
@@ -175,6 +189,17 @@ export class GameManager {
       
       const recentInputs = combo.slice(-pattern.length)
       return recentInputs.join('') === pattern.join('')
+    })
+  }
+  
+  checkPartialComboValidity(combo, trainingMode) {
+    const patterns = this.trainingPatterns[trainingMode] || this.trainingPatterns.motion
+    
+    return patterns.some(pattern => {
+      if (combo.length > pattern.length) return false
+      
+      // Check if the current combo is a prefix of any valid pattern
+      return pattern.slice(0, combo.length).join('') === combo.join('')
     })
   }
   

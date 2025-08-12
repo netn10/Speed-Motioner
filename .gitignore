@@ -97,3 +97,4 @@ Thumbs.db
 
 # Kiro specific
 .kiro/cache/
+node_modules

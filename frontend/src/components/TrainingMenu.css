@@ -394,3 +394,72 @@
     align-self: center;
   }
 }
+
+/* Custom Settings Styles */
+.custom-settings {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.custom-settings h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: inherit;
+  text-align: center;
+}
+
+.custom-inputs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-group label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: inherit;
+  margin-bottom: 0.5rem;
+}
+
+.custom-input {
+  padding: 12px 16px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: inherit;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.custom-input:focus {
+  outline: none;
+  border-color: #667eea;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+.custom-input:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Mobile responsive for custom settings */
+@media (max-width: 768px) {
+  .custom-inputs {
+    grid-template-columns: 1fr;
+  }
+  
+  .custom-settings {
+    padding: 1rem;
+  }
+}

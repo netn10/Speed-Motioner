@@ -122,28 +122,26 @@ Practice special move inputs like:
 - Left + Attack (← + A)
 - Right + Special (→ + B)
 
-### Blocking Practice
-Improve your blocking timing:
-- Block (Block)
-- Direction + Block (←/→/↑/↓ + Block)
-
-### Punish Training
-Learn to punish unsafe moves:
-- Double Attack (A + A)
-- Attack + Special (A + B)
-- Special + Attack (B + A)
-
 ### Combo Training
 Practice complex combinations:
 - Triple Attack (A + A + A)
 - Attack + Special + Attack (A + B + A)
 - Up Attack + Down Attack (↑ + A + ↓ + A)
 
+### Custom Challenge
+Fully customizable challenge mode where you can set your own parameters:
+- **Customizable Input Count**: Set any number of inputs from 1 to 50
+- **Customizable Timing**: Set seconds per input from 0.5 to 10 seconds
+- **Mixed Patterns**: Combines movement, attack, and combo inputs for variety
+
 ## Difficulty Levels
 
-- **Easy**: 1-second input window, 70% accuracy required
-- **Medium**: 0.5-second input window, 80% accuracy required  
-- **Hard**: 0.2-second input window, 90% accuracy required
+For Motion Training and Combo Training modes:
+- **Easy**: 3-second input window, 5 inputs required
+- **Medium**: 2-second input window, 10 inputs required
+- **Hard**: 1-second input window, 20 inputs required
+
+*Note: Custom Challenge mode allows you to set your own input count and timing.*
 
 ## Settings & Customization
 

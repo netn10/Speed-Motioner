@@ -8,6 +8,7 @@ export const useTrainingStore = create(
       currentSession: null,
       isTraining: false,
       sessionStartTime: null,
+      lastUpdateTime: null,
       
       // Leaderboard data
       leaderboard: [],
@@ -16,15 +17,17 @@ export const useTrainingStore = create(
       sessions: [],
       
       // Actions
-      startTrainingSession: (mode, difficulty, targetInputs = 10) => {
+      startTrainingSession: (mode, difficulty, targetInputs = 10, customTiming = null) => {
         const sessionId = `session_${Date.now()}`
+        const now = Date.now()
         const session = {
           id: sessionId,
           mode,
           difficulty,
-          startTime: Date.now(),
+          startTime: now,
           endTime: null,
           targetInputs: targetInputs,
+          customTiming: customTiming, // Store custom timing for custom mode
           score: {
             totalInputs: 0,
             correctInputs: 0,
@@ -36,13 +39,52 @@ export const useTrainingStore = create(
           inputs: []
         }
         
+        console.log('🚀 Starting training session:', session)
+        
         set({
           currentSession: session,
           isTraining: true,
-          sessionStartTime: Date.now()
+          sessionStartTime: now,
+          lastUpdateTime: now
         })
         
+        // Immediately update timer to start counting
+        setTimeout(() => {
+          const { currentSession: current, sessionStartTime: startTime } = get()
+          if (current && startTime) {
+            const timeElapsed = Math.floor((Date.now() - startTime) / 1000)
+            set({
+              currentSession: {
+                ...current,
+                score: {
+                  ...current.score,
+                  timeElapsed
+                }
+              }
+            })
+          }
+        }, 100)
+        
         return session
+      },
+      
+      updateSessionTimer: () => {
+        const { currentSession, sessionStartTime } = get()
+        if (!currentSession || !sessionStartTime) return
+        
+        const now = Date.now()
+        const timeElapsed = Math.floor((now - sessionStartTime) / 1000) // Convert to seconds
+        
+        set({
+          lastUpdateTime: now,
+          currentSession: {
+            ...currentSession,
+            score: {
+              ...currentSession.score,
+              timeElapsed
+            }
+          }
+        })
       },
       
       endTrainingSession: (finalScore) => {
@@ -87,6 +129,7 @@ export const useTrainingStore = create(
           currentSession: null,
           isTraining: false,
           sessionStartTime: null,
+          lastUpdateTime: null,
           sessions: updatedSessions,
           leaderboard: updatedLeaderboard
         })
@@ -96,7 +139,20 @@ export const useTrainingStore = create(
       
       updateSessionScore: (scoreUpdate) => {
         const { currentSession } = get()
-        if (!currentSession) return
+        if (!currentSession) {
+          console.log('❌ updateSessionScore: No current session')
+          return
+        }
+        
+        console.log('📝 updateSessionScore called:', {
+          currentScore: currentSession.score,
+          scoreUpdate,
+          willUpdate: {
+            ...currentSession.score,
+            ...scoreUpdate
+          },
+          timestamp: Date.now()
+        })
         
         set({
           currentSession: {
@@ -107,6 +163,16 @@ export const useTrainingStore = create(
             }
           }
         })
+        
+        // Verify the update
+        setTimeout(() => {
+          const updatedSession = get().currentSession
+          console.log('✅ updateSessionScore completed:', {
+            updatedScore: updatedSession?.score,
+            totalInputs: updatedSession?.score?.totalInputs,
+            timestamp: Date.now()
+          })
+        }, 0)
       },
       
       addSessionInput: (input) => {
@@ -115,7 +181,9 @@ export const useTrainingStore = create(
         
         const newTotalInputs = currentSession.score.totalInputs + 1
         const newAccuracy = (newTotalInputs / newTotalInputs) * 100 // For now, all inputs are correct
-        const newMaxCombo = Math.max(currentSession.score.maxCombo || 0, newTotalInputs) // Max combo is longest sequence
+        const newComboCount = newTotalInputs // Current combo is the total sequence length
+        // Don't update maxCombo here - it should only be updated when valid combos are completed
+        const newMaxCombo = currentSession.score.maxCombo || 0
         
         set({
           currentSession: {
@@ -129,7 +197,8 @@ export const useTrainingStore = create(
               totalInputs: newTotalInputs,
               correctInputs: newTotalInputs, // For now, all inputs are correct
               accuracy: newAccuracy,
-              maxCombo: newMaxCombo, // Track longest sequence
+              comboCount: newComboCount, // Current combo count
+              maxCombo: newMaxCombo, // Keep existing max combo (only update on valid completions)
               points: newTotalInputs * 10 // Simple scoring: 10 points per input
             }
           }
@@ -160,13 +229,23 @@ export const useTrainingStore = create(
     }),
     {
       name: 'speed-motioner-training',
-      partialize: (state) => ({
-        leaderboard: state.leaderboard,
-        sessions: state.sessions,
-        currentSession: state.currentSession,
-        isTraining: state.isTraining,
-        sessionStartTime: state.sessionStartTime
-      })
+      onRehydrateStorage: () => (state) => {
+        console.log('🔄 Training store rehydrated:', state)
+      }
     }
   )
 )
+
+// Add subscription to monitor state changes in development
+if (process.env.NODE_ENV === 'development') {
+  useTrainingStore.subscribe((state) => {
+    console.log('🔄 Training store state changed:', {
+      isTraining: state.isTraining,
+      currentSession: state.currentSession ? {
+        totalInputs: state.currentSession.score?.totalInputs,
+        correctInputs: state.currentSession.score?.correctInputs,
+        targetInputs: state.currentSession.targetInputs
+      } : null
+    })
+  })
+}
