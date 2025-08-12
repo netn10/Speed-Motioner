@@ -46,17 +46,11 @@ const GameCanvas = () => {
 
   // Initialize game state when component mounts
   useEffect(() => {
-    console.log('GameCanvas mounted, initializing game state')
-    console.log('Training state on mount:', { isTraining, currentSession })
-    console.log('LocalStorage training data:', localStorage.getItem('speed-motioner-training'))
-
     // Only start playing if there's an active training session
     if (isTraining && currentSession) {
-      console.log('Active training session found, starting game')
       setGameState('playing')
       startSession()
     } else {
-      console.log('No active training session, showing start screen')
       setGameState('menu')
       resetGame()
     }
@@ -84,19 +78,7 @@ const GameCanvas = () => {
       // We need to get the completed session from the sessions array
       const { sessions } = useTrainingStore.getState()
       const lastSession = sessions[0] // Most recent session
-      console.log('🔍 Training session ended, checking for completed session:', {
-        sessionsCount: sessions.length,
-        lastSession: lastSession ? {
-          id: lastSession.id,
-          score: lastSession.score
-        } : null,
-        completedSession: completedSession ? {
-          id: completedSession.id,
-          score: completedSession.score
-        } : null
-      })
       if (lastSession && !completedSession) {
-        console.log('✅ Setting completed session and showing dialog')
         setCompletedSession(lastSession)
         setShowEndDialog(true)
       }
@@ -106,7 +88,6 @@ const GameCanvas = () => {
   useEffect(() => {
     if (socket) {
       socket.on('gameState', (newState) => {
-        console.log('Received gameState:', newState, typeof newState)
         // The backend sends an object, but we need a string for the frontend
         if (newState && typeof newState === 'object' && newState.status) {
           // Map backend status to frontend gameState
@@ -115,26 +96,19 @@ const GameCanvas = () => {
             'active': 'playing'
           }
           const mappedState = statusMap[newState.status] || 'playing'
-          console.log('Mapping backend status:', newState.status, 'to frontend state:', mappedState)
           setGameState(mappedState)
         } else if (typeof newState === 'string') {
-          console.log('Setting string gameState:', newState)
           setGameState(newState)
-        } else {
-          console.warn('Unexpected gameState format:', newState)
         }
       })
 
       socket.on('connect', () => {
-        console.log('Socket connected successfully')
       })
 
       socket.on('disconnect', () => {
-        console.log('Socket disconnected')
       })
 
       socket.on('connect_error', (error) => {
-        console.warn('Socket connection error:', error)
       })
 
       return () => {
@@ -347,17 +321,6 @@ const GameCanvas = () => {
         <div className="end-session-dialog">
           <div className="dialog-content">
             <h2>Training Complete!</h2>
-            {process.env.NODE_ENV === 'development' && (
-              <div style={{ fontSize: '12px', color: '#666', marginBottom: '10px' }}>
-                Debug: {JSON.stringify({
-                  points: completedSession.score?.points,
-                  accuracy: completedSession.score?.accuracy,
-                  maxCombo: completedSession.score?.maxCombo,
-                  totalInputs: completedSession.score?.totalInputs,
-                  timeElapsed: completedSession.score?.timeElapsed
-                })}
-              </div>
-            )}
             <div className="session-results">
               <div className="result-item points">
                 <span className="result-label">Total Points:</span>

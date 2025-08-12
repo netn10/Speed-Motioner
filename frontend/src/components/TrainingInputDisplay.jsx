@@ -69,6 +69,34 @@ const TrainingInputDisplay = () => {
       [activeAttackButtons[0]], // first attack
       [activeAttackButtons[1]], // second attack
     ],
+    motions: [
+      // Quarter-Circle Forward (QCF) - 236 + attack
+      [inputButtons.down, inputButtons.right, activeAttackButtons[0]], // QCF + LP
+      [inputButtons.down, inputButtons.right, activeAttackButtons[1]], // QCF + MP
+      
+      // Quarter-Circle Back (QCB) - 214 + attack  
+      [inputButtons.down, inputButtons.left, activeAttackButtons[0]], // QCB + LP
+      [inputButtons.down, inputButtons.left, activeAttackButtons[1]], // QCB + MP
+      
+      // Dragon Punch (DP) - 623 + attack
+      [inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // DP + LP
+      [inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[1]], // DP + MP
+      
+      // Half-Circle Forward (HCF) - 41236 + attack
+      [inputButtons.left, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // HCF + LP (simplified)
+      
+      // Half-Circle Back (HCB) - 63214 + attack
+      [inputButtons.right, inputButtons.down, inputButtons.left, activeAttackButtons[0]], // HCB + LP (simplified)
+      
+      // Charge Back-Forward (simplified for training)
+      [inputButtons.left, inputButtons.right, activeAttackButtons[0]], // Charge B-F + LP
+      
+      // Charge Down-Up (simplified for training)  
+      [inputButtons.down, inputButtons.up, activeAttackButtons[0]], // Charge D-U + LP
+      
+      // Double Quarter-Circle Forward - 236236 + attack
+      [inputButtons.down, inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // D-QCF + LP
+    ],
     combos: [
       [activeAttackButtons[0], activeAttackButtons[0]], // double attack
       [activeAttackButtons[0], activeAttackButtons[1]], // first + second
@@ -93,6 +121,10 @@ const TrainingInputDisplay = () => {
       [inputButtons.up, inputButtons.down], // up + down
       [inputButtons.left, inputButtons.right], // left + right
       [inputButtons.up, activeAttackButtons[0], inputButtons.down], // up + attack + down
+      // Add some motion inputs to custom mode too
+      [inputButtons.down, inputButtons.right, activeAttackButtons[0]], // QCF + LP
+      [inputButtons.down, inputButtons.left, activeAttackButtons[0]], // QCB + LP
+      [inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // DP + LP
     ]
   }
 
@@ -122,34 +154,14 @@ const TrainingInputDisplay = () => {
   const startNewInput = () => {
     // Prevent multiple simultaneous calls
     if (processingSuccessRef.current) {
-      console.log('❌ startNewInput blocked - already processing success')
       return
     }
     
     startNewInputCallCount.current += 1
-    console.log('🔄 startNewInput called (call #' + startNewInputCallCount.current + ')', {
-      trainingMode,
-      attackButtonMode,
-      inputButtons,
-      currentInput: currentInput.length,
-      isCompleted,
-      processingSuccessRef: processingSuccessRef.current,
-      timeoutTriggeredRef: timeoutTriggeredRef.current
-    })
 
     const patterns = trainingPatterns[trainingMode] || trainingPatterns.motion
     const randomIndex = Math.floor(Math.random() * patterns.length)
     const selectedPattern = patterns[randomIndex]
-
-    console.log('New pattern selected:', {
-      trainingMode,
-      pattern: selectedPattern,
-      patternDisplay: selectedPattern.map(input => getInputDisplay(input)),
-      patternTypes: selectedPattern.map(input => typeof input),
-      inputButtons,
-      activeAttackButtons,
-      allPatterns: patterns
-    })
 
     setCurrentInput(selectedPattern)
     setInputIndex(0)
@@ -168,7 +180,6 @@ const TrainingInputDisplay = () => {
 
     // Clear any existing timer
     if (timerRef.current) {
-      console.log('⏹️ Clearing existing timer before starting new one')
       clearInterval(timerRef.current)
       timerRef.current = null
     }
@@ -180,15 +191,12 @@ const TrainingInputDisplay = () => {
     }
 
     // Start countdown timer
-    console.log('⏱️ Starting new timer with timing:', timing)
     timerRef.current = setInterval(() => {
       setTimeRemaining(prev => {
         const newTime = prev - 100
-        console.log('⏱️ Timer tick:', { prev, newTime, willTimeout: newTime <= 100, timerId: timerRef.current })
         
         if (newTime <= 100) {
           // Time's up - mark as failed
-          console.log('⏰ Timer reached 0, calling handleInputTimeout')
           if (timerRef.current) {
             clearInterval(timerRef.current)
             timerRef.current = null
@@ -208,12 +216,6 @@ const TrainingInputDisplay = () => {
   }
 
   useEffect(() => {
-    console.log('🔄 useEffect triggered for startNewInput', {
-      trainingMode,
-      attackButtonMode,
-      stableInputButtons: Object.keys(stableInputButtons)
-    })
-    
     // Only start new input if we're not already processing
     if (!processingSuccessRef.current) {
       startNewInput()
@@ -232,15 +234,7 @@ const TrainingInputDisplay = () => {
 
   // Handle successful input completion
   const handleInputSuccess = () => {
-    console.log('🎯 handleInputSuccess called', {
-      isCompleted,
-      processingSuccessRef: processingSuccessRef.current,
-      timeoutTriggeredRef: timeoutTriggeredRef.current,
-      timeRemaining
-    })
-
     if (isCompleted || processingSuccessRef.current || timeoutTriggeredRef.current) {
-      console.log('❌ Success ignored - already completed, processing, or timeout triggered')
       return
     }
 
@@ -293,18 +287,6 @@ const TrainingInputDisplay = () => {
     updateSessionScore(newScore)
     setPointsEarned(totalPoints)
 
-    console.log('🎉 CORRECT FULL INPUT! +' + totalPoints + ' points!', {
-      pattern: currentInput.map(input => getInputDisplay(input)).join(' + '),
-      completionTime: completionTime + 'ms',
-      timeBonus: Math.round(timeBonus * 100) + '%',
-      basePoints,
-      complexityBonus,
-      difficultyMultiplier,
-      timeBonusPoints,
-      totalPoints,
-      newScore
-    })
-
     // Start new input after delay
     setTimeout(() => {
       processingSuccessRef.current = false  // Reset the processing flag
@@ -315,15 +297,8 @@ const TrainingInputDisplay = () => {
   // Handle input timeout
   const handleInputTimeout = () => {
     timeoutCount.current += 1
-    console.log('🕐 TIMEOUT TRIGGERED! (timeout #' + timeoutCount.current + ')', {
-      isCompleted,
-      currentSession: currentSession?.score,
-      currentInput,
-      timeoutTriggeredRef: timeoutTriggeredRef.current
-    })
 
     if (isCompleted) {
-      console.log('❌ Timeout ignored - already completed')
       return
     }
     setIsCompleted(true)
@@ -338,22 +313,10 @@ const TrainingInputDisplay = () => {
       accuracy: (currentScore.correctInputs / (currentScore.totalInputs + 1)) * 100
     }
 
-    console.log('📊 Updating score on timeout:', {
-      currentScore,
-      newScore,
-      difference: {
-        totalInputs: newScore.totalInputs - currentScore.totalInputs,
-        correctInputs: newScore.correctInputs - currentScore.correctInputs
-      }
-    })
-
     updateSessionScore(newScore)
-
-    console.log('✅ Score updated after timeout!', { newScore })
 
     // Start new input after delay
     setTimeout(() => {
-      console.log('🔄 Starting new input after timeout delay (timeout #' + timeoutCount.current + ')')
       // Reset the timeout flag before starting new input
       timeoutTriggeredRef.current = false
       startNewInput()
@@ -373,17 +336,7 @@ const TrainingInputDisplay = () => {
       const lastInput = newInputs[newInputs.length - 1]
       const expectedInput = currentInput[0]
 
-      console.log('Single input check:', {
-        expected: expectedInput,
-        actual: lastInput,
-        match: lastInput === expectedInput,
-        inputStartCount: inputStartCountRef.current,
-        totalInputs: inputs.length,
-        newInputsCount: newInputs.length
-      })
-
       if (lastInput === expectedInput) {
-        console.log('✅ Single input SUCCESS!')
         handleInputSuccess()
         return
       }
@@ -394,21 +347,7 @@ const TrainingInputDisplay = () => {
         const isMatch = currentInput.length === recentNewInputs.length &&
           currentInput.every((expectedInput, index) => expectedInput === recentNewInputs[index])
 
-        console.log('Multi-input check:', {
-          currentInput,
-          newInputs,
-          recentNewInputs,
-          isMatch,
-          inputStartCount: inputStartCountRef.current,
-          comparison: currentInput.map((expected, i) => ({
-            expected,
-            actual: recentNewInputs[i],
-            match: expected === recentNewInputs[i]
-          }))
-        })
-
         if (isMatch) {
-          console.log('✅ Multi-input SUCCESS!')
           handleInputSuccess()
           return
         }
@@ -421,17 +360,10 @@ const TrainingInputDisplay = () => {
 
     // If this is a new input that doesn't match what we expect, increment progress by 1
     if (lastInput !== expectedFirstInput && inputIndex === 0) {
-      console.log('❌ Wrong input (incrementing progress by 1):', {
-        expected: expectedFirstInput,
-        actual: lastInput,
-        inputStartCount: inputStartCountRef.current
-      })
-
       // Show wrong input feedback
       setShowFeedback('wrong')
 
       // Reset timer for wrong input
-      console.log('⏱️ Resetting timer due to wrong input')
       if (timerRef.current) {
         clearInterval(timerRef.current)
         timerRef.current = null
@@ -450,11 +382,9 @@ const TrainingInputDisplay = () => {
       timerRef.current = setInterval(() => {
         setTimeRemaining(prev => {
           const newTime = prev - 100
-          console.log('⏱️ Timer tick (after wrong input):', { prev, newTime, willTimeout: newTime <= 100, timerId: timerRef.current })
           
           if (newTime <= 100) {
             // Time's up - mark as failed
-            console.log('⏰ Timer reached 0 after wrong input, calling handleInputTimeout')
             if (timerRef.current) {
               clearInterval(timerRef.current)
               timerRef.current = null
@@ -478,12 +408,6 @@ const TrainingInputDisplay = () => {
       
       if (currentScore.totalInputs >= targetInputs) {
         // Already at or past target - don't increment progress further
-        console.log('🚫 Wrong input ignored - already at target:', {
-          currentTotalInputs: currentScore.totalInputs,
-          targetInputs,
-          actual: lastInput,
-          expected: expectedFirstInput
-        })
       } else {
         // Update score for wrong inputs - increment progress by 1 but don't affect accuracy calculation
         const newScore = {
@@ -494,15 +418,6 @@ const TrainingInputDisplay = () => {
           accuracy: currentScore.accuracy || 0
         }
         updateSessionScore(newScore)
-
-        console.log('📊 Updated score after wrong input:', {
-          currentScore,
-          newScore,
-          difference: {
-            totalInputs: newScore.totalInputs - currentScore.totalInputs,
-            correctInputs: newScore.correctInputs - currentScore.correctInputs
-          }
-        })
       }
 
       // Clear wrong input feedback after a short delay
@@ -537,14 +452,7 @@ const TrainingInputDisplay = () => {
       }
     }
 
-    console.log('Progress tracking:', {
-      currentInput,
-      newInputs,
-      recentInputs: newInputs.slice(-Math.min(currentInput.length, newInputs.length)),
-      progressIndex,
-      inputIndex,
-      inputStartCount: inputStartCountRef.current
-    })
+
 
     setInputIndex(progressIndex)
   }, [inputs, currentInput])
@@ -552,13 +460,6 @@ const TrainingInputDisplay = () => {
   // Monitor session score changes for debugging
   useEffect(() => {
     if (currentSession?.score) {
-      console.log('📊 Session score updated:', {
-        totalInputs: currentSession.score.totalInputs,
-        correctInputs: currentSession.score.correctInputs,
-        targetInputs: currentSession.targetInputs,
-        progress: `${currentSession.score.totalInputs}/${currentSession.targetInputs}`,
-        timestamp: Date.now()
-      })
       // Force re-render to ensure UI updates
       setForceUpdate(prev => prev + 1)
     }
@@ -571,42 +472,24 @@ const TrainingInputDisplay = () => {
     const currentProgress = currentSession.score?.totalInputs || 0
     const targetInputs = currentSession.targetInputs || 10
     
-    console.log('📊 Progress check:', {
-      currentProgress,
-      targetInputs,
-      willEnd: currentProgress >= targetInputs,
-      isCompleted,
-      timeoutTriggeredRef: timeoutTriggeredRef.current,
-      timeoutCount: timeoutCount.current
-    })
-    
     if (currentProgress >= targetInputs && !isCompleted) {
       // End training session immediately when progress reaches or exceeds target
-      console.log('🎯 Training target reached! Ending session immediately.', {
-        currentProgress,
-        targetInputs,
-        isCompleted
-      })
-      
       setIsCompleted(true)
       // Don't show success feedback here - this could be triggered by a timeout or wrong input
       // Only show success feedback when an actual successful input completion happens
       
       // Clear timer
       if (timerRef.current) {
-        console.log('⏹️ Clearing timer due to immediate completion')
         clearInterval(timerRef.current)
         timerRef.current = null
       }
       if (timeoutRef.current) {
-        console.log('⏹️ Clearing timeout due to immediate completion')
         clearTimeout(timeoutRef.current)
         timeoutRef.current = null
       }
       
       // End session immediately
       setTimeout(() => {
-        console.log('🏁 Ending training session immediately')
         endTrainingSession(currentSession.score)
       }, 1000)
     }
@@ -614,6 +497,29 @@ const TrainingInputDisplay = () => {
 
   const getInputDisplay = (input) => {
     return inputLabels[input] || input.toUpperCase()
+  }
+
+  // Get motion pattern name for display
+  const getMotionPatternName = (pattern) => {
+    // Check if this pattern matches any known motion inputs
+    const patternString = pattern.map(input => getInputDisplay(input)).join('')
+    
+    // Check for common motion patterns
+    if (pattern.length >= 3) {
+      const directions = pattern.slice(0, -1) // All but last (attack) input
+      const directionString = directions.map(input => getInputDisplay(input)).join('')
+      
+      if (directionString === '↓→') return 'QCF (236)'
+      if (directionString === '↓←') return 'QCB (214)'
+      if (directionString === '→↓→') return 'DP (623)'
+      if (directionString === '←↓→') return 'HCF (41236)'
+      if (directionString === '→↓←') return 'HCB (63214)'
+      if (directionString === '←→') return 'Charge B-F'
+      if (directionString === '↓↑') return 'Charge D-U'
+      if (directionString === '↓→↓→') return 'D-QCF (236236)'
+    }
+    
+    return null
   }
 
   if (!currentInput.length) {
@@ -631,18 +537,6 @@ const TrainingInputDisplay = () => {
        <div className="progress-container">
          <div className="progress-label">
            Progress: {currentSession?.score?.totalInputs || 0} / {currentSession?.targetInputs || 10}
-           {process.env.NODE_ENV === 'development' && (
-             <span style={{ fontSize: '12px', color: '#666', marginLeft: '10px' }}>
-               (Debug: {JSON.stringify({
-                 totalInputs: currentSession?.score?.totalInputs,
-                 targetInputs: currentSession?.targetInputs,
-                 customTiming: currentSession?.customTiming,
-                 forceUpdate,
-                 timeoutCount: timeoutCount.current,
-                 startNewInputCalls: startNewInputCallCount.current
-               })})
-             </span>
-           )}
          </div>
          <div className="progress-bar">
            <div
@@ -671,6 +565,11 @@ const TrainingInputDisplay = () => {
 
       <div className="input-instruction">
         <span className="instruction-text">Perform this input:</span>
+        {trainingMode === 'motions' && getMotionPatternName(currentInput) && (
+          <div className="motion-pattern-name">
+            {getMotionPatternName(currentInput)}
+          </div>
+        )}
         <div className="input-sequence">
           {currentInput.map((input, index) => (
             <span
@@ -711,7 +610,6 @@ const TrainingInputDisplay = () => {
       {process.env.NODE_ENV === 'development' && (
         <button 
           onClick={() => {
-            console.log('🧪 Manual timeout test triggered')
             handleInputTimeout()
           }}
           style={{

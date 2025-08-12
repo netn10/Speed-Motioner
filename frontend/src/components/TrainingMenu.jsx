@@ -16,7 +16,8 @@ const TrainingMenu = () => {
   const [customSeconds, setCustomSeconds] = useState(2)
 
   const trainingModes = [
-    { id: 'motion', name: 'Motion Training', description: 'Practice special move inputs' },
+    { id: 'motion', name: 'Basic Motion', description: 'Practice basic movement and attack inputs' },
+    { id: 'motions', name: 'Fighting Game Motions', description: 'Practice QCF, QCB, DP, HCF, HCB, Charge, and Double motions' },
     { id: 'combos', name: 'Combo Training', description: 'Practice hit confirms and combos' },
     { id: 'custom', name: 'Custom Challenge', description: 'Custom difficulty challenge mode' }
   ]

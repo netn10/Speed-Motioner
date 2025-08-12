@@ -959,8 +959,9 @@
   .axis-number {
     text-align: center;
   }
-}/
-* Gamepad Button Configuration */
+}
+
+/* Gamepad Button Configuration */
 .gamepad-button-mappings {
   margin-top: 20px;
 }

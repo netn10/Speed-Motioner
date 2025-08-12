@@ -39,7 +39,7 @@ export const useTrainingStore = create(
           inputs: []
         }
         
-        console.log('🚀 Starting training session:', session)
+
         
         set({
           currentSession: session,
@@ -140,19 +140,8 @@ export const useTrainingStore = create(
       updateSessionScore: (scoreUpdate) => {
         const { currentSession } = get()
         if (!currentSession) {
-          console.log('❌ updateSessionScore: No current session')
           return
         }
-        
-        console.log('📝 updateSessionScore called:', {
-          currentScore: currentSession.score,
-          scoreUpdate,
-          willUpdate: {
-            ...currentSession.score,
-            ...scoreUpdate
-          },
-          timestamp: Date.now()
-        })
         
         set({
           currentSession: {
@@ -163,16 +152,6 @@ export const useTrainingStore = create(
             }
           }
         })
-        
-        // Verify the update
-        setTimeout(() => {
-          const updatedSession = get().currentSession
-          console.log('✅ updateSessionScore completed:', {
-            updatedScore: updatedSession?.score,
-            totalInputs: updatedSession?.score?.totalInputs,
-            timestamp: Date.now()
-          })
-        }, 0)
       },
       
       addSessionInput: (input) => {
@@ -228,24 +207,8 @@ export const useTrainingStore = create(
       clearSessions: () => set({ sessions: [] })
     }),
     {
-      name: 'speed-motioner-training',
-      onRehydrateStorage: () => (state) => {
-        console.log('🔄 Training store rehydrated:', state)
-      }
+      name: 'speed-motioner-training'
     }
   )
 )
 
-// Add subscription to monitor state changes in development
-if (process.env.NODE_ENV === 'development') {
-  useTrainingStore.subscribe((state) => {
-    console.log('🔄 Training store state changed:', {
-      isTraining: state.isTraining,
-      currentSession: state.currentSession ? {
-        totalInputs: state.currentSession.score?.totalInputs,
-        correctInputs: state.currentSession.score?.correctInputs,
-        targetInputs: state.currentSession.targetInputs
-      } : null
-    })
-  })
-}

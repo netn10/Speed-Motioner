@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { useSettingsStore } from './settingsStore'
+import { detectMotionPattern, detectPartialMotionPattern, generateMotionTrainingPatterns, MOTION_PATTERNS } from '../utils/motionInputs'
 
 export const useGameStore = create((set, get) => ({
   // Game state
@@ -192,6 +193,34 @@ const checkComboValidity = (combo, trainingMode) => {
       [activeAttackButtons[0]], // first attack
       [activeAttackButtons[1]], // second attack
     ],
+    motions: [
+      // Quarter-Circle Forward (QCF) - 236 + attack
+      [inputButtons.down, inputButtons.right, activeAttackButtons[0]], // QCF + LP
+      [inputButtons.down, inputButtons.right, activeAttackButtons[1]], // QCF + MP
+      
+      // Quarter-Circle Back (QCB) - 214 + attack  
+      [inputButtons.down, inputButtons.left, activeAttackButtons[0]], // QCB + LP
+      [inputButtons.down, inputButtons.left, activeAttackButtons[1]], // QCB + MP
+      
+      // Dragon Punch (DP) - 623 + attack
+      [inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // DP + LP
+      [inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[1]], // DP + MP
+      
+      // Half-Circle Forward (HCF) - 41236 + attack
+      [inputButtons.left, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // HCF + LP (simplified)
+      
+      // Half-Circle Back (HCB) - 63214 + attack
+      [inputButtons.right, inputButtons.down, inputButtons.left, activeAttackButtons[0]], // HCB + LP (simplified)
+      
+      // Charge Back-Forward (simplified for training)
+      [inputButtons.left, inputButtons.right, activeAttackButtons[0]], // Charge B-F + LP
+      
+      // Charge Down-Up (simplified for training)  
+      [inputButtons.down, inputButtons.up, activeAttackButtons[0]], // Charge D-U + LP
+      
+      // Double Quarter-Circle Forward - 236236 + attack
+      [inputButtons.down, inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // D-QCF + LP
+    ],
     combos: [
       [activeAttackButtons[0], activeAttackButtons[0]], // double attack
       [activeAttackButtons[0], activeAttackButtons[1]], // first + second
@@ -216,6 +245,10 @@ const checkComboValidity = (combo, trainingMode) => {
       [inputButtons.up, inputButtons.down], // up + down
       [inputButtons.left, inputButtons.right], // left + right
       [inputButtons.up, activeAttackButtons[0], inputButtons.down], // up + attack + down
+      // Add some motion inputs to custom mode too
+      [inputButtons.down, inputButtons.right, activeAttackButtons[0]], // QCF + LP
+      [inputButtons.down, inputButtons.left, activeAttackButtons[0]], // QCB + LP
+      [inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // DP + LP
     ]
   }
 
@@ -255,6 +288,34 @@ const checkPartialComboValidity = (combo, trainingMode) => {
       [activeAttackButtons[0]], // first attack
       [activeAttackButtons[1]], // second attack
     ],
+    motions: [
+      // Quarter-Circle Forward (QCF) - 236 + attack
+      [inputButtons.down, inputButtons.right, activeAttackButtons[0]], // QCF + LP
+      [inputButtons.down, inputButtons.right, activeAttackButtons[1]], // QCF + MP
+      
+      // Quarter-Circle Back (QCB) - 214 + attack  
+      [inputButtons.down, inputButtons.left, activeAttackButtons[0]], // QCB + LP
+      [inputButtons.down, inputButtons.left, activeAttackButtons[1]], // QCB + MP
+      
+      // Dragon Punch (DP) - 623 + attack
+      [inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // DP + LP
+      [inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[1]], // DP + MP
+      
+      // Half-Circle Forward (HCF) - 41236 + attack
+      [inputButtons.left, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // HCF + LP (simplified)
+      
+      // Half-Circle Back (HCB) - 63214 + attack
+      [inputButtons.right, inputButtons.down, inputButtons.left, activeAttackButtons[0]], // HCB + LP (simplified)
+      
+      // Charge Back-Forward (simplified for training)
+      [inputButtons.left, inputButtons.right, activeAttackButtons[0]], // Charge B-F + LP
+      
+      // Charge Down-Up (simplified for training)  
+      [inputButtons.down, inputButtons.up, activeAttackButtons[0]], // Charge D-U + LP
+      
+      // Double Quarter-Circle Forward - 236236 + attack
+      [inputButtons.down, inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // D-QCF + LP
+    ],
     combos: [
       [activeAttackButtons[0], activeAttackButtons[0]], // double attack
       [activeAttackButtons[0], activeAttackButtons[1]], // first + second
@@ -279,6 +340,10 @@ const checkPartialComboValidity = (combo, trainingMode) => {
       [inputButtons.up, inputButtons.down], // up + down
       [inputButtons.left, inputButtons.right], // left + right
       [inputButtons.up, activeAttackButtons[0], inputButtons.down], // up + attack + down
+      // Add some motion inputs to custom mode too
+      [inputButtons.down, inputButtons.right, activeAttackButtons[0]], // QCF + LP
+      [inputButtons.down, inputButtons.left, activeAttackButtons[0]], // QCB + LP
+      [inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // DP + LP
     ]
   }
   

@@ -86,7 +86,6 @@ const Settings = () => {
   }
 
   const handleGamepadActionClick = (action) => {
-    console.log('Gamepad action clicked for editing:', action)
     setEditingGamepadAction(action)
     setWaitingForGamepadInput(true)
   }
@@ -110,7 +109,6 @@ const Settings = () => {
         gamepad.buttons.forEach((button, index) => {
           if (button.pressed && !buttonPressed) {
             buttonPressed = true // Set flag immediately
-            console.log('Gamepad button pressed:', index, 'assigning to action:', editingGamepadAction)
 
             // Assign the button to the action
             setGamepadButton(index, editingGamepadAction)

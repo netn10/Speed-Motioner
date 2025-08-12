@@ -32,6 +32,45 @@ export class GameManager {
         ['up', 'down', 'j'], // arrow up + down + attack
         ['left', 'right', 'j'], // arrow left + right + attack
       ],
+      motions: [
+        // Quarter-Circle Forward (QCF) - 236 + attack
+        ['s', 'd', 'j'], // down + right + attack (WASD)
+        ['down', 'right', 'j'], // down + right + attack (arrows)
+        ['s', 'd', 'k'], // down + right + special (WASD)
+        ['down', 'right', 'k'], // down + right + special (arrows)
+        
+        // Quarter-Circle Back (QCB) - 214 + attack  
+        ['s', 'a', 'j'], // down + left + attack (WASD)
+        ['down', 'left', 'j'], // down + left + attack (arrows)
+        ['s', 'a', 'k'], // down + left + special (WASD)
+        ['down', 'left', 'k'], // down + left + special (arrows)
+        
+        // Dragon Punch (DP) - 623 + attack
+        ['d', 's', 'd', 'j'], // right + down + right + attack (WASD)
+        ['right', 'down', 'right', 'j'], // right + down + right + attack (arrows)
+        ['d', 's', 'd', 'k'], // right + down + right + special (WASD)
+        ['right', 'down', 'right', 'k'], // right + down + right + special (arrows)
+        
+        // Half-Circle Forward (HCF) - 41236 + attack (simplified)
+        ['a', 's', 'd', 'j'], // left + down + right + attack (WASD)
+        ['left', 'down', 'right', 'j'], // left + down + right + attack (arrows)
+        
+        // Half-Circle Back (HCB) - 63214 + attack (simplified)
+        ['d', 's', 'a', 'j'], // right + down + left + attack (WASD)
+        ['right', 'down', 'left', 'j'], // right + down + left + attack (arrows)
+        
+        // Charge Back-Forward (simplified for training)
+        ['a', 'd', 'j'], // left + right + attack (WASD)
+        ['left', 'right', 'j'], // left + right + attack (arrows)
+        
+        // Charge Down-Up (simplified for training)  
+        ['s', 'w', 'j'], // down + up + attack (WASD)
+        ['down', 'up', 'j'], // down + up + attack (arrows)
+        
+        // Double Quarter-Circle Forward - 236236 + attack
+        ['s', 'd', 's', 'd', 'j'], // down + right + down + right + attack (WASD)
+        ['down', 'right', 'down', 'right', 'j'], // down + right + down + right + attack (arrows)
+      ],
       combos: [
         ['j', 'j', 'j'], // triple attack
         ['j', 'k', 'j'], // attack + special + attack
@@ -60,6 +99,13 @@ export class GameManager {
         ['a', 'd'], // left + right
         ['w', 'j', 's'], // up + attack + down
         ['a', 'j', 'd'], // left + attack + right
+        // Add some motion inputs to custom mode too
+        ['s', 'd', 'j'], // QCF + attack (WASD)
+        ['down', 'right', 'j'], // QCF + attack (arrows)
+        ['s', 'a', 'j'], // QCB + attack (WASD)
+        ['down', 'left', 'j'], // QCB + attack (arrows)
+        ['d', 's', 'd', 'j'], // DP + attack (WASD)
+        ['right', 'down', 'right', 'j'], // DP + attack (arrows)
       ]
     }
     

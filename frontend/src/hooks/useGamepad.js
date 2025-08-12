@@ -69,13 +69,11 @@ export const useGamepad = () => {
   // Detect gamepad connection/disconnection
   useEffect(() => {
     const handleGamepadConnected = (event) => {
-      console.log('Gamepad connected:', event.gamepad)
       setIsConnected(true)
       updateGamepads()
     }
 
     const handleGamepadDisconnected = (event) => {
-      console.log('Gamepad disconnected:', event.gamepad)
       setIsConnected(false)
       updateGamepads()
     }
