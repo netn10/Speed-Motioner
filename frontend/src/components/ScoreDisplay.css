@@ -1,12 +1,23 @@
 .score-display {
-  background: rgba(255, 255, 255, 0.1);
   border-radius: 15px;
   padding: 1rem 1.5rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(10px);
   min-width: 300px;
+  transition: all 0.3s ease;
+}
+
+.score-display.dark {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
+}
+
+.score-display.light {
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #2c3e50;
 }
 
 .score-grid {
@@ -22,23 +33,45 @@
   text-align: center;
   padding: 0.5rem;
   border-radius: 10px;
+}
+
+.score-display.dark .score-item {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.score-display.light .score-item {
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
 .score-label {
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.8);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 0.3rem;
 }
 
+.score-display.dark .score-label {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.score-display.light .score-label {
+  color: rgba(44, 62, 80, 0.8);
+}
+
 .score-value {
   font-size: 1.2rem;
   font-weight: bold;
+}
+
+.score-display.dark .score-value {
   color: white;
+}
+
+.score-display.light .score-value {
+  color: #2c3e50;
 }
 
 /* Special styling for points */

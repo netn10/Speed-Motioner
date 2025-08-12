@@ -3,7 +3,7 @@ import { useSettingsStore } from '../stores/settingsStore'
 import './InputDisplay.css'
 
 const InputDisplay = ({ inputs }) => {
-  const { inputButtons, attackButtonMode } = useSettingsStore()
+  const { inputButtons, attackButtonMode, theme } = useSettingsStore()
 
   const getInputColor = (input) => {
     const colors = {
@@ -75,7 +75,7 @@ const InputDisplay = ({ inputs }) => {
   const activeAttackButtons = getActiveAttackButtons()
 
   return (
-    <div className="input-display">
+    <div className={`input-display ${theme}`}>
       <h3>Recent Inputs</h3>
       <div className="input-list">
         {inputs && inputs.length > 0 ? (

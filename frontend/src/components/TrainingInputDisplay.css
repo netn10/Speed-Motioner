@@ -1,13 +1,24 @@
 .training-input-display {
   position: relative;
   width: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
   padding: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border-bottom: 3px solid rgba(255, 255, 255, 0.2);
   border-radius: 15px 15px 0 0;
   margin-bottom: 1rem;
+  transition: all 0.3s ease;
+}
+
+.training-input-display.dark {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-bottom: 3px solid rgba(255, 255, 255, 0.2);
+}
+
+.training-input-display.light {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  color: #2c3e50;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-bottom: 3px solid rgba(44, 62, 80, 0.2);
 }
 
 .training-header {

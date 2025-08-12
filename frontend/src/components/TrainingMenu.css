@@ -21,6 +21,21 @@
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
+  transition: all 0.3s ease;
+}
+
+.training-menu.light .menu-container {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(44, 62, 80, 0.1);
+  color: #2c3e50;
+}
+
+.training-menu.dark .menu-container {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
 }
 
 .menu-header {
@@ -29,6 +44,15 @@
   align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.training-menu.light .menu-header {
+  border-bottom: 2px solid rgba(44, 62, 80, 0.1);
+}
+
+.training-menu.dark .menu-header {
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -116,11 +140,37 @@
   color: inherit;
 }
 
+.training-menu.light .mode-card,
+.training-menu.light .difficulty-card {
+  background: rgba(44, 62, 80, 0.05);
+  border: 2px solid rgba(44, 62, 80, 0.2);
+  color: #2c3e50;
+}
+
+.training-menu.dark .mode-card,
+.training-menu.dark .difficulty-card {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
 .mode-card:hover,
 .difficulty-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
   border-color: #667eea;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.training-menu.light .mode-card:hover,
+.training-menu.light .difficulty-card:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  background: rgba(44, 62, 80, 0.1);
+}
+
+.training-menu.dark .mode-card:hover,
+.training-menu.dark .difficulty-card:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
   background: rgba(255, 255, 255, 0.2);
 }
 
@@ -174,6 +224,17 @@
   padding: 20px;
   margin-bottom: 2rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.training-menu.light .training-summary {
+  background: rgba(44, 62, 80, 0.05);
+  border: 1px solid rgba(44, 62, 80, 0.1);
+}
+
+.training-menu.dark .training-summary {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .training-summary h3 {
@@ -198,6 +259,17 @@
   padding: 10px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.training-menu.light .summary-item {
+  background: rgba(44, 62, 80, 0.05);
+  border: 1px solid rgba(44, 62, 80, 0.1);
+}
+
+.training-menu.dark .summary-item {
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -238,6 +310,21 @@
   border: 2px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
   color: white;
+  transition: all 0.3s ease;
+}
+
+.training-menu.light .dialog-content {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border: 2px solid rgba(44, 62, 80, 0.2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  color: #2c3e50;
+}
+
+.training-menu.dark .dialog-content {
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  color: white;
 }
 
 .dialog-content h2 {
@@ -260,6 +347,17 @@
   padding: 15px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.training-menu.light .detail-item {
+  background: rgba(44, 62, 80, 0.05);
+  border: 1px solid rgba(44, 62, 80, 0.1);
+}
+
+.training-menu.dark .detail-item {
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -316,9 +414,29 @@
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
+.training-menu.light .cancel-btn {
+  background: rgba(44, 62, 80, 0.1);
+  color: #2c3e50;
+  border: 1px solid rgba(44, 62, 80, 0.3);
+}
+
+.training-menu.dark .cancel-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
 .cancel-btn:hover {
   background: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
+}
+
+.training-menu.light .cancel-btn:hover {
+  background: rgba(44, 62, 80, 0.2);
+}
+
+.training-menu.dark .cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .confirm-btn {
@@ -402,6 +520,17 @@
   background: rgba(255, 255, 255, 0.05);
   border-radius: 15px;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.training-menu.light .custom-settings {
+  background: rgba(44, 62, 80, 0.05);
+  border: 1px solid rgba(44, 62, 80, 0.1);
+}
+
+.training-menu.dark .custom-settings {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .custom-settings h3 {
@@ -441,6 +570,18 @@
   backdrop-filter: blur(10px);
 }
 
+.training-menu.light .custom-input {
+  border: 2px solid rgba(44, 62, 80, 0.2);
+  background: rgba(255, 255, 255, 0.8);
+  color: #2c3e50;
+}
+
+.training-menu.dark .custom-input {
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
 .custom-input:focus {
   outline: none;
   border-color: #667eea;
@@ -448,7 +589,25 @@
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
 }
 
+.training-menu.light .custom-input:focus {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.training-menu.dark .custom-input:focus {
+  background: rgba(255, 255, 255, 0.15);
+}
+
 .custom-input:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.training-menu.light .custom-input:hover {
+  border-color: rgba(44, 62, 80, 0.4);
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.training-menu.dark .custom-input:hover {
   border-color: rgba(255, 255, 255, 0.4);
   background: rgba(255, 255, 255, 0.12);
 }

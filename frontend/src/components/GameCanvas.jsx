@@ -37,7 +37,7 @@ const GameCanvas = () => {
 
   const socket = useSocket()
   const inputButtons = useInputButtons()
-  const { attackButtonMode } = useSettingsStore()
+  const { attackButtonMode, theme } = useSettingsStore()
   const { isConnected: gamepadConnected, setInputCallback } = useGamepad()
 
   const [showEndDialog, setShowEndDialog] = useState(false)
@@ -272,7 +272,7 @@ const GameCanvas = () => {
   }
 
   return (
-    <div className="game-canvas">
+    <div className={`game-canvas ${theme}`}>
       <GamepadStatus />
 
       {isTraining && currentSession && (

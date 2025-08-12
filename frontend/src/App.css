@@ -17,6 +17,21 @@
 .App-header {
   position: relative;
   overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.App.light .App-header {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(195, 207, 226, 0.8) 100%);
+  color: #2c3e50;
+  border-bottom: 2px solid rgba(44, 62, 80, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.App.dark .App-header {
+  background: linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(40, 40, 40, 0.8) 100%);
+  color: white;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .App-header::before {
@@ -28,6 +43,15 @@
   bottom: 0;
   background: linear-gradient(45deg, rgba(255, 107, 107, 0.1), rgba(78, 205, 196, 0.1));
   z-index: -1;
+  transition: all 0.3s ease;
+}
+
+.App.light .App-header::before {
+  background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+}
+
+.App.dark .App-header::before {
+  background: linear-gradient(45deg, rgba(255, 107, 107, 0.1), rgba(78, 205, 196, 0.1));
 }
 
 main {
@@ -38,6 +62,29 @@ main {
 /* Animation for the header text */
 .App-header h1 {
   animation: glow 2s ease-in-out infinite alternate;
+  transition: all 0.3s ease;
+}
+
+.App.light .App-header h1 {
+  color: #2c3e50;
+  text-shadow: 0 0 5px rgba(102, 126, 234, 0.3), 0 0 10px rgba(118, 75, 162, 0.3);
+}
+
+.App.dark .App-header h1 {
+  color: white;
+  text-shadow: 0 0 5px rgba(255, 107, 107, 0.5), 0 0 10px rgba(78, 205, 196, 0.5);
+}
+
+.App-header p {
+  transition: all 0.3s ease;
+}
+
+.App.light .App-header p {
+  color: rgba(44, 62, 80, 0.8);
+}
+
+.App.dark .App-header p {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 @keyframes glow {
@@ -46,5 +93,22 @@ main {
   }
   to {
     text-shadow: 0 0 10px rgba(255, 107, 107, 0.8), 0 0 20px rgba(78, 205, 196, 0.8);
+  }
+}
+
+.App.light .App-header h1 {
+  animation: glowLight 2s ease-in-out infinite alternate;
+}
+
+.App.dark .App-header h1 {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glowLight {
+  from {
+    text-shadow: 0 0 5px rgba(102, 126, 234, 0.3), 0 0 10px rgba(118, 75, 162, 0.3);
+  }
+  to {
+    text-shadow: 0 0 10px rgba(102, 126, 234, 0.6), 0 0 20px rgba(118, 75, 162, 0.6);
   }
 }

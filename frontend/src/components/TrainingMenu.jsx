@@ -9,7 +9,7 @@ const TrainingMenu = () => {
   const navigate = useNavigate()
   const { setTrainingMode, setDifficulty, resetGame } = useGameStore()
   const { startTrainingSession } = useTrainingStore()
-  const { theme, trainingDuration } = useSettingsStore()
+  const { theme } = useSettingsStore()
   const [selectedMode, setSelectedMode] = useState('motion')
   const [selectedDifficulty, setSelectedDifficulty] = useState('medium')
   const [customInputs, setCustomInputs] = useState(10)
@@ -35,8 +35,8 @@ const TrainingMenu = () => {
     setTrainingMode(selectedMode)
     setDifficulty(selectedDifficulty)
 
-    // Get target inputs based on difficulty for custom challenge
-    let targetInputs = trainingDuration
+    // Get target inputs based on difficulty
+    let targetInputs = 10 // default
     let customTiming = 2000 // default 2 seconds
     if (selectedMode === 'custom') {
       targetInputs = customInputs
@@ -157,7 +157,7 @@ const TrainingMenu = () => {
               <span className="summary-value">
                 {selectedMode === 'custom' 
                   ? `${customInputs} inputs, ${customSeconds}s per input`
-                  : `${trainingDuration} inputs`
+                  : `${selectedDifficulty === 'easy' ? 5 : selectedDifficulty === 'hard' ? 20 : 10} inputs`
                 }
               </span>
             </div>

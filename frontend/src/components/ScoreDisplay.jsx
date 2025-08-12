@@ -1,7 +1,9 @@
 import React from 'react'
+import { useSettingsStore } from '../stores/settingsStore'
 import './ScoreDisplay.css'
 
 const ScoreDisplay = ({ score }) => {
+  const { theme } = useSettingsStore()
   const {
     totalInputs = 0,
     correctInputs = 0,
@@ -19,7 +21,7 @@ const ScoreDisplay = ({ score }) => {
   }
 
   return (
-    <div className="score-display">
+    <div className={`score-display ${theme}`}>
       <div className="score-grid">
         <div className="score-item points">
           <span className="score-label">Points</span>

@@ -47,3 +47,4 @@ export const testTrainingCompletionDialog = () => {
 if (typeof window !== 'undefined') {
   window.testTrainingCompletionDialog = testTrainingCompletionDialog
 }
+

@@ -49,8 +49,7 @@ export const useSettingsStore = create(
         '15': 'right'
       },
       
-      // Training settings
-      trainingDuration: 10, // Number of inputs for training session (5-20)
+
       
       // Available button options
       availableButtons: [
@@ -80,12 +79,11 @@ export const useSettingsStore = create(
         }
       })),
 
-      setTrainingDuration: (duration) => set({ trainingDuration: Math.max(5, Math.min(20, duration)) }),
+
       
       resetToDefaults: () => set({
         theme: 'dark',
         attackButtonMode: 6,
-        trainingDuration: 10,
         inputButtons: {
           up: 'w',
           down: 's',
@@ -126,7 +124,6 @@ export const useSettingsStore = create(
       partialize: (state) => ({
         theme: state.theme,
         attackButtonMode: state.attackButtonMode,
-        trainingDuration: state.trainingDuration,
         inputButtons: state.inputButtons,
         gamepadButtons: state.gamepadButtons
       })

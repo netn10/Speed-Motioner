@@ -11,7 +11,7 @@ const TrainingInputDisplay = () => {
   const trainingMode = currentSession?.mode || 'motion'
   const difficulty = currentSession?.difficulty || 'medium'
   const inputButtons = useInputButtons()
-  const { attackButtonMode } = useSettingsStore()
+  const { attackButtonMode, theme } = useSettingsStore()
   const [currentInput, setCurrentInput] = useState([])
   const [inputIndex, setInputIndex] = useState(0)
   const [timeRemaining, setTimeRemaining] = useState(0)
@@ -553,7 +553,7 @@ const TrainingInputDisplay = () => {
   }
 
   return (
-    <div className={`training-input-display ${showFeedback ? `feedback-${showFeedback}` : ''}`}>
+    <div className={`training-input-display ${theme} ${showFeedback ? `feedback-${showFeedback}` : ''}`}>
       <div className="training-header">
         <h3>Training: {trainingMode.charAt(0).toUpperCase() + trainingMode.slice(1)}</h3>
         <span className="difficulty-badge">{difficulty}</span>

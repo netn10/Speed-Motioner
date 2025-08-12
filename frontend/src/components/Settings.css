@@ -17,12 +17,22 @@
 .settings-container {
   max-width: 800px;
   margin: 0 auto;
-  background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border-radius: 20px;
   padding: 30px;
+  transition: all 0.3s ease;
+}
+
+.settings.dark .settings-container {
+  background: rgba(255, 255, 255, 0.1);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.settings.light .settings-container {
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .settings-header {
@@ -31,7 +41,14 @@
   align-items: center;
   margin-bottom: 30px;
   padding-bottom: 20px;
+}
+
+.settings.dark .settings-header {
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.settings.light .settings-header {
+  border-bottom: 2px solid rgba(44, 62, 80, 0.1);
 }
 
 .settings-header h2 {
@@ -46,7 +63,6 @@
 
 .back-button {
   background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
-  color: white;
   border: none;
   padding: 12px 24px;
   border-radius: 25px;
@@ -55,6 +71,14 @@
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.settings.dark .back-button {
+  color: white;
+}
+
+.settings.light .back-button {
+  color: black;
 }
 
 .back-button:hover {
@@ -74,10 +98,17 @@
 }
 
 .section-description {
-  color: rgba(255, 255, 255, 0.8);
   margin-bottom: 20px;
   font-size: 1rem;
   line-height: 1.6;
+}
+
+.settings.dark .section-description {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.settings.light .section-description {
+  color: rgba(44, 62, 80, 0.8);
 }
 
 .gamepad-status-settings {
@@ -131,9 +162,18 @@
   justify-content: center;
   gap: 20px;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.05);
   border-radius: 15px;
+  transition: all 0.3s ease;
+}
+
+.settings.dark .theme-toggle {
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.settings.light .theme-toggle {
+  background: rgba(44, 62, 80, 0.05);
+  border: 1px solid rgba(44, 62, 80, 0.1);
 }
 
 /* Attack Mode Toggle */
@@ -143,9 +183,18 @@
   justify-content: center;
   gap: 20px;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.05);
   border-radius: 15px;
+  transition: all 0.3s ease;
+}
+
+.settings.dark .attack-mode-toggle {
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.settings.light .attack-mode-toggle {
+  background: rgba(44, 62, 80, 0.05);
+  border: 1px solid rgba(44, 62, 80, 0.1);
 }
 
 /* Training Duration Setting */
@@ -223,6 +272,16 @@
   font-size: 1.1rem;
 }
 
+.settings.dark .theme-label,
+.settings.dark .mode-label {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.settings.light .theme-label,
+.settings.light .mode-label {
+  color: #2c3e50;
+}
+
 .toggle-switch {
   position: relative;
   width: 60px;
@@ -268,14 +327,27 @@
   justify-content: space-between;
   align-items: center;
   padding: 15px;
-  background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
 }
 
-.input-button-item:hover {
+.settings.dark .input-button-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.settings.light .input-button-item {
+  background: rgba(44, 62, 80, 0.05);
+  border: 1px solid rgba(44, 62, 80, 0.1);
+}
+
+.settings.dark .input-button-item:hover {
   background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.settings.light .input-button-item:hover {
+  background: rgba(44, 62, 80, 0.1);
   transform: translateY(-2px);
 }
 
@@ -322,11 +394,20 @@
 
 /* Button Selection */
 .button-selection {
-  background: rgba(255, 255, 255, 0.05);
   border-radius: 15px;
   padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
   margin-top: 20px;
+  transition: all 0.3s ease;
+}
+
+.settings.dark .button-selection {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.settings.light .button-selection {
+  background: rgba(44, 62, 80, 0.05);
+  border: 1px solid rgba(44, 62, 80, 0.1);
 }
 
 .button-selection p {
@@ -345,9 +426,7 @@
 }
 
 .available-button {
-  background: rgba(255, 255, 255, 0.1);
   color: inherit;
-  border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 8px;
   border-radius: 6px;
   font-size: 0.9rem;
@@ -355,6 +434,16 @@
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: center;
+}
+
+.settings.dark .available-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.settings.light .available-button {
+  background: rgba(44, 62, 80, 0.1);
+  border: 1px solid rgba(44, 62, 80, 0.2);
 }
 
 .available-button:hover {
@@ -369,7 +458,14 @@
   justify-content: center;
   margin-top: 30px;
   padding-top: 20px;
+}
+
+.settings.dark .settings-actions {
   border-top: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.settings.light .settings-actions {
+  border-top: 2px solid rgba(44, 62, 80, 0.1);
 }
 
 .reset-button {
@@ -410,6 +506,14 @@
     font-size: 2rem;
   }
   
+  .settings-sections {
+    flex-direction: column;
+  }
+  
+  .input-tabs {
+    flex-direction: column;
+  }
+  
   .input-buttons-grid {
     grid-template-columns: 1fr;
   }
@@ -429,15 +533,23 @@
   gap: 10px;
   margin-bottom: 30px;
   padding: 5px;
-  background: rgba(255, 255, 255, 0.05);
   border-radius: 15px;
+  transition: all 0.3s ease;
+}
+
+.settings.dark .settings-tabs {
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.settings.light .settings-tabs {
+  background: rgba(44, 62, 80, 0.05);
+  border: 1px solid rgba(44, 62, 80, 0.1);
 }
 
 .tab-button {
   flex: 1;
   background: transparent;
-  color: rgba(255, 255, 255, 0.7);
   border: none;
   padding: 15px 20px;
   border-radius: 10px;
@@ -447,9 +559,22 @@
   transition: all 0.3s ease;
 }
 
-.tab-button:hover {
+.settings.dark .tab-button {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.settings.light .tab-button {
+  color: rgba(44, 62, 80, 0.7);
+}
+
+.settings.dark .tab-button:hover {
   background: rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.9);
+}
+
+.settings.light .tab-button:hover {
+  background: rgba(44, 62, 80, 0.1);
+  color: rgba(44, 62, 80, 0.9);
 }
 
 .tab-button.active {
@@ -524,13 +649,31 @@
 .gamepad-info p {
   margin: 5px 0;
   font-size: 0.9rem;
+}
+
+.settings.dark .gamepad-info p {
   opacity: 0.9;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.settings.light .gamepad-info p {
+  opacity: 0.9;
+  color: rgba(44, 62, 80, 0.9);
 }
 
 .connection-help {
   font-style: italic;
-  opacity: 0.8;
   margin-top: 10px;
+}
+
+.settings.dark .connection-help {
+  opacity: 0.8;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.settings.light .connection-help {
+  opacity: 0.8;
+  color: rgba(44, 62, 80, 0.8);
 }
 
 /* Live Input Test */
@@ -575,8 +718,17 @@
 
 .no-inputs {
   text-align: center;
-  opacity: 0.6;
   font-style: italic;
+}
+
+.settings.dark .no-inputs {
+  opacity: 0.6;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.settings.light .no-inputs {
+  opacity: 0.6;
+  color: rgba(44, 62, 80, 0.6);
 }
 
 /* Button Mapping Grid */
@@ -615,8 +767,15 @@
 }
 
 .arrow {
-  color: rgba(255, 255, 255, 0.5);
   font-weight: bold;
+}
+
+.settings.dark .arrow {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.settings.light .arrow {
+  color: rgba(44, 62, 80, 0.5);
 }
 
 .action-name {
@@ -678,13 +837,30 @@
 .button-index {
   font-size: 0.8rem;
   font-weight: 600;
+}
+
+.settings.dark .button-index {
   opacity: 0.8;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.settings.light .button-index {
+  opacity: 0.8;
+  color: rgba(44, 62, 80, 0.8);
 }
 
 .button-value {
   font-size: 0.9rem;
   font-weight: 600;
   margin-top: 4px;
+}
+
+.settings.dark .button-value {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.settings.light .button-value {
+  color: rgba(44, 62, 80, 0.9);
 }
 
 .axes-states {
@@ -703,7 +879,16 @@
   font-size: 0.9rem;
   font-weight: 600;
   min-width: 60px;
+}
+
+.settings.dark .axis-index {
   opacity: 0.8;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.settings.light .axis-index {
+  opacity: 0.8;
+  color: rgba(44, 62, 80, 0.8);
 }
 
 .axis-bar {
@@ -732,6 +917,14 @@
   min-width: 50px;
   text-align: right;
   font-family: monospace;
+}
+
+.settings.dark .axis-number {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.settings.light .axis-number {
+  color: rgba(44, 62, 80, 0.9);
 }
 
 /* Responsive Design for Gamepad Test */
@@ -1049,4 +1242,80 @@ ad Input Prompt */
 
 .gamepad-mapping-button:hover::after {
   left: 100%;
+}
+
+/* Settings Sections */
+.settings-sections {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+  padding: 5px;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+}
+
+.settings.dark .settings-sections {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.settings.light .settings-sections {
+  background: rgba(44, 62, 80, 0.05);
+  border: 1px solid rgba(44, 62, 80, 0.1);
+}
+
+.section-button {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 15px 20px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.settings.dark .section-button {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.settings.light .section-button {
+  color: rgba(44, 62, 80, 0.7);
+}
+
+.settings.dark .section-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.settings.light .section-button:hover {
+  background: rgba(44, 62, 80, 0.1);
+  color: rgba(44, 62, 80, 0.9);
+}
+
+.section-button.active {
+  background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Input Tabs */
+.input-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+  padding: 5px;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+}
+
+.settings.dark .input-tabs {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.settings.light .input-tabs {
+  background: rgba(44, 62, 80, 0.05);
+  border: 1px solid rgba(44, 62, 80, 0.1);
 }
