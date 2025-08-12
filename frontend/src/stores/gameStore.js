@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { useSettingsStore } from './settingsStore'
-import { detectMotionPattern, detectPartialMotionPattern, generateMotionTrainingPatterns, MOTION_PATTERNS } from '../utils/motionInputs'
+import { useTrainingStore } from './trainingStore'
+import { detectMotionPattern, detectPartialMotionPattern, generateMotionTrainingPatterns, generateCustomTrainingPatterns, MOTION_PATTERNS } from '../utils/motionInputs'
 
 export const useGameStore = create((set, get) => ({
   // Game state
@@ -228,28 +229,36 @@ const checkComboValidity = (combo, trainingMode) => {
       [activeAttackButtons[0], activeAttackButtons[0], activeAttackButtons[0]], // triple first attack
       [inputButtons.up, activeAttackButtons[0]], // up + attack
     ],
-    custom: [
-      // Mixed patterns for custom challenge
-      [inputButtons.up], // up
-      [inputButtons.down], // down
-      [inputButtons.left], // left
-      [inputButtons.right], // right
-      [activeAttackButtons[0]], // first attack
-      [activeAttackButtons[1]], // second attack
-      [inputButtons.up, activeAttackButtons[0]], // up + attack
-      [inputButtons.down, activeAttackButtons[0]], // down + attack
-      [inputButtons.left, activeAttackButtons[0]], // left + attack
-      [inputButtons.right, activeAttackButtons[0]], // right + attack
-      [activeAttackButtons[0], activeAttackButtons[0]], // double attack
-      [activeAttackButtons[0], activeAttackButtons[1]], // attack + attack
-      [inputButtons.up, inputButtons.down], // up + down
-      [inputButtons.left, inputButtons.right], // left + right
-      [inputButtons.up, activeAttackButtons[0], inputButtons.down], // up + attack + down
-      // Add some motion inputs to custom mode too
-      [inputButtons.down, inputButtons.right, activeAttackButtons[0]], // QCF + LP
-      [inputButtons.down, inputButtons.left, activeAttackButtons[0]], // QCB + LP
-      [inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // DP + LP
-    ]
+    custom: (() => {
+      // Get custom configuration from training store
+      const { currentSession } = useTrainingStore.getState()
+      if (currentSession && currentSession.customConfig) {
+        return generateCustomTrainingPatterns(inputButtons, activeAttackButtons, currentSession.customConfig)
+      }
+      
+      // Fallback to mixed patterns if no custom config
+      return [
+        [inputButtons.up], // up
+        [inputButtons.down], // down
+        [inputButtons.left], // left
+        [inputButtons.right], // right
+        [activeAttackButtons[0]], // first attack
+        [activeAttackButtons[1]], // second attack
+        [inputButtons.up, activeAttackButtons[0]], // up + attack
+        [inputButtons.down, activeAttackButtons[0]], // down + attack
+        [inputButtons.left, activeAttackButtons[0]], // left + attack
+        [inputButtons.right, activeAttackButtons[0]], // right + attack
+        [activeAttackButtons[0], activeAttackButtons[0]], // double attack
+        [activeAttackButtons[0], activeAttackButtons[1]], // attack + attack
+        [inputButtons.up, inputButtons.down], // up + down
+        [inputButtons.left, inputButtons.right], // left + right
+        [inputButtons.up, activeAttackButtons[0], inputButtons.down], // up + attack + down
+        // Add some motion inputs to custom mode too
+        [inputButtons.down, inputButtons.right, activeAttackButtons[0]], // QCF + LP
+        [inputButtons.down, inputButtons.left, activeAttackButtons[0]], // QCB + LP
+        [inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // DP + LP
+      ]
+    })()
   }
 
   const patterns = trainingPatterns[trainingMode] || trainingPatterns.motion
@@ -323,28 +332,36 @@ const checkPartialComboValidity = (combo, trainingMode) => {
       [activeAttackButtons[0], activeAttackButtons[0], activeAttackButtons[0]], // triple first attack
       [inputButtons.up, activeAttackButtons[0]], // up + attack
     ],
-    custom: [
-      // Mixed patterns for custom challenge
-      [inputButtons.up], // up
-      [inputButtons.down], // down
-      [inputButtons.left], // left
-      [inputButtons.right], // right
-      [activeAttackButtons[0]], // first attack
-      [activeAttackButtons[1]], // second attack
-      [inputButtons.up, activeAttackButtons[0]], // up + attack
-      [inputButtons.down, activeAttackButtons[0]], // down + attack
-      [inputButtons.left, activeAttackButtons[0]], // left + attack
-      [inputButtons.right, activeAttackButtons[0]], // right + attack
-      [activeAttackButtons[0], activeAttackButtons[0]], // double attack
-      [activeAttackButtons[0], activeAttackButtons[1]], // attack + attack
-      [inputButtons.up, inputButtons.down], // up + down
-      [inputButtons.left, inputButtons.right], // left + right
-      [inputButtons.up, activeAttackButtons[0], inputButtons.down], // up + attack + down
-      // Add some motion inputs to custom mode too
-      [inputButtons.down, inputButtons.right, activeAttackButtons[0]], // QCF + LP
-      [inputButtons.down, inputButtons.left, activeAttackButtons[0]], // QCB + LP
-      [inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // DP + LP
-    ]
+    custom: (() => {
+      // Get custom configuration from training store
+      const { currentSession } = useTrainingStore.getState()
+      if (currentSession && currentSession.customConfig) {
+        return generateCustomTrainingPatterns(inputButtons, activeAttackButtons, currentSession.customConfig)
+      }
+      
+      // Fallback to mixed patterns if no custom config
+      return [
+        [inputButtons.up], // up
+        [inputButtons.down], // down
+        [inputButtons.left], // left
+        [inputButtons.right], // right
+        [activeAttackButtons[0]], // first attack
+        [activeAttackButtons[1]], // second attack
+        [inputButtons.up, activeAttackButtons[0]], // up + attack
+        [inputButtons.down, activeAttackButtons[0]], // down + attack
+        [inputButtons.left, activeAttackButtons[0]], // left + attack
+        [inputButtons.right, activeAttackButtons[0]], // right + attack
+        [activeAttackButtons[0], activeAttackButtons[0]], // double attack
+        [activeAttackButtons[0], activeAttackButtons[1]], // attack + attack
+        [inputButtons.up, inputButtons.down], // up + down
+        [inputButtons.left, inputButtons.right], // left + right
+        [inputButtons.up, activeAttackButtons[0], inputButtons.down], // up + attack + down
+        // Add some motion inputs to custom mode too
+        [inputButtons.down, inputButtons.right, activeAttackButtons[0]], // QCF + LP
+        [inputButtons.down, inputButtons.left, activeAttackButtons[0]], // QCB + LP
+        [inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // DP + LP
+      ]
+    })()
   }
   
   const patterns = trainingPatterns[trainingMode] || trainingPatterns.motion

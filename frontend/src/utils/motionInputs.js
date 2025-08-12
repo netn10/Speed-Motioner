@@ -319,6 +319,84 @@ export const createMotionDisplay = (motionName, inputButtons) => {
   }
 }
 
+// Generate custom training patterns based on selected types
+export const generateCustomTrainingPatterns = (inputButtons, activeAttackButtons, customConfig) => {
+  const patterns = []
+  
+  // Basic motion patterns
+  if (customConfig.includeBasicMotions) {
+    patterns.push(
+      // Single movement inputs
+      [inputButtons.up],
+      [inputButtons.down], 
+      [inputButtons.left],
+      [inputButtons.right],
+      // Single attack inputs
+      [activeAttackButtons[0]],
+      [activeAttackButtons[1]],
+      // Basic movement + attack combinations
+      [inputButtons.up, activeAttackButtons[0]],
+      [inputButtons.down, activeAttackButtons[0]], 
+      [inputButtons.left, activeAttackButtons[0]],
+      [inputButtons.right, activeAttackButtons[0]]
+    )
+  }
+  
+  // Fighting game motion patterns
+  if (customConfig.includeFightingGameMotions) {
+    patterns.push(
+      // Quarter-Circle Forward (QCF) - 236 + attack
+      [inputButtons.down, inputButtons.right, activeAttackButtons[0]],
+      [inputButtons.down, inputButtons.right, activeAttackButtons[1]],
+      
+      // Quarter-Circle Back (QCB) - 214 + attack  
+      [inputButtons.down, inputButtons.left, activeAttackButtons[0]],
+      [inputButtons.down, inputButtons.left, activeAttackButtons[1]],
+      
+      // Dragon Punch (DP) - 623 + attack
+      [inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[0]],
+      [inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[1]],
+      
+      // Half-Circle Forward (HCF) - 41236 + attack (simplified)
+      [inputButtons.left, inputButtons.down, inputButtons.right, activeAttackButtons[0]],
+      
+      // Half-Circle Back (HCB) - 63214 + attack (simplified)
+      [inputButtons.right, inputButtons.down, inputButtons.left, activeAttackButtons[0]],
+      
+      // Charge Back-Forward (simplified for training)
+      [inputButtons.left, inputButtons.right, activeAttackButtons[0]],
+      
+      // Charge Down-Up (simplified for training)  
+      [inputButtons.down, inputButtons.up, activeAttackButtons[0]],
+      
+      // Double Quarter-Circle Forward - 236236 + attack
+      [inputButtons.down, inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[0]]
+    )
+  }
+  
+  // Combo training patterns
+  if (customConfig.includeComboTraining) {
+    patterns.push(
+      // Multi-attack combinations
+      [activeAttackButtons[0], activeAttackButtons[0]], // double attack
+      [activeAttackButtons[0], activeAttackButtons[1]], // first + second
+      [activeAttackButtons[1], activeAttackButtons[0]], // second + first
+      [activeAttackButtons[0], activeAttackButtons[0], activeAttackButtons[0]], // triple first attack
+      
+      // Movement + attack combinations
+      [inputButtons.up, activeAttackButtons[0]], // up + attack
+      [inputButtons.down, activeAttackButtons[1]], // down + different attack
+      
+      // More complex combinations
+      [inputButtons.up, inputButtons.down], // up + down
+      [inputButtons.left, inputButtons.right], // left + right
+      [inputButtons.up, activeAttackButtons[0], inputButtons.down] // up + attack + down
+    )
+  }
+  
+  return patterns
+}
+
 export default {
   MOTION_PATTERNS,
   MOTION_NAMES,
@@ -331,5 +409,6 @@ export default {
   isChargeMotion,
   validateChargeMotion,
   generateMotionTrainingPatterns,
+  generateCustomTrainingPatterns,
   createMotionDisplay
 }

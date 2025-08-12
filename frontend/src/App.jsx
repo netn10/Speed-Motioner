@@ -20,12 +20,12 @@ const AppHeader = () => {
 
   return (
     <header className="App-header" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '220px' }}>
-      <div className="header-content" style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'center', display: 'flex', width: '100%' }}>
+      <div className="header-content" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', display: 'flex', width: '100%', maxWidth: '1200px', position: 'relative' }}>
         <div className="header-title" onClick={handleTitleClick} style={{ textAlign: 'center' }}>
           <h1>Speed Motioner</h1>
           <p>Fighting Game Training Tool</p>
         </div>
-        <div className="header-controls" style={{ marginTop: '20px', justifyContent: 'center', display: 'flex' }}>
+        <div className="header-controls" style={{ position: 'absolute', right: '0', display: 'flex' }}>
           <button 
             className="theme-toggle-btn"
             onClick={toggleTheme}
@@ -37,6 +37,7 @@ const AppHeader = () => {
       </div>
     </header>
   )
+}
 
 function App() {
   const { theme } = useSettingsStore()

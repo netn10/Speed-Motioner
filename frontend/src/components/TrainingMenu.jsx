@@ -14,6 +14,13 @@ const TrainingMenu = () => {
   const [selectedDifficulty, setSelectedDifficulty] = useState('medium')
   const [customInputs, setCustomInputs] = useState(10)
   const [customSeconds, setCustomSeconds] = useState(2)
+  
+  // Custom Challenge configuration
+  const [customConfig, setCustomConfig] = useState({
+    includeBasicMotions: true,
+    includeFightingGameMotions: false,
+    includeComboTraining: false
+  })
 
   const trainingModes = [
     { id: 'motion', name: 'Basic Motion', description: 'Practice basic movement and attack inputs' },
@@ -29,6 +36,17 @@ const TrainingMenu = () => {
   ]
 
   const handleStartTraining = () => {
+    // Validate custom challenge selection
+    if (selectedMode === 'custom') {
+      const hasSelection = customConfig.includeBasicMotions || 
+                          customConfig.includeFightingGameMotions || 
+                          customConfig.includeComboTraining
+      if (!hasSelection) {
+        alert('Please select at least one training pattern type for Custom Challenge!')
+        return
+      }
+    }
+
     // Reset game state
     resetGame()
 
@@ -51,8 +69,8 @@ const TrainingMenu = () => {
       }
     }
 
-    // Start new training session with duration and custom timing
-    startTrainingSession(selectedMode, selectedDifficulty, targetInputs, customTiming)
+    // Start new training session with duration, custom timing, and custom config
+    startTrainingSession(selectedMode, selectedDifficulty, targetInputs, customTiming, customConfig)
 
     // Navigate to game
     navigate('/game')
@@ -110,6 +128,63 @@ const TrainingMenu = () => {
         {selectedMode === 'custom' && (
           <div className="custom-settings">
             <h3>Custom Challenge Settings</h3>
+            
+            <div className="pattern-selection">
+              <h4>Training Pattern Types</h4>
+              <div className="pattern-checkboxes">
+                <div className="checkbox-group">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={customConfig.includeBasicMotions}
+                      onChange={(e) => setCustomConfig(prev => ({
+                        ...prev,
+                        includeBasicMotions: e.target.checked
+                      }))}
+                    />
+                    <span className="checkbox-text">
+                      <strong>Basic Motions</strong>
+                      <small>Simple directional inputs and single attacks (↑, ↓, ←, →, Attack)</small>
+                    </span>
+                  </label>
+                </div>
+                
+                <div className="checkbox-group">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={customConfig.includeFightingGameMotions}
+                      onChange={(e) => setCustomConfig(prev => ({
+                        ...prev,
+                        includeFightingGameMotions: e.target.checked
+                      }))}
+                    />
+                    <span className="checkbox-text">
+                      <strong>Fighting Game Motions</strong>
+                      <small>Complex motion inputs (QCF, QCB, DP, HCF, HCB, Charge, Double motions)</small>
+                    </span>
+                  </label>
+                </div>
+                
+                <div className="checkbox-group">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={customConfig.includeComboTraining}
+                      onChange={(e) => setCustomConfig(prev => ({
+                        ...prev,
+                        includeComboTraining: e.target.checked
+                      }))}
+                    />
+                    <span className="checkbox-text">
+                      <strong>Combo Training</strong>
+                      <small>Multi-attack sequences and movement + attack combinations</small>
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            
             <div className="custom-inputs">
               <div className="input-group">
                 <label htmlFor="customInputs">Number of Inputs:</label>
@@ -162,6 +237,18 @@ const TrainingMenu = () => {
                 }
               </span>
             </div>
+            {selectedMode === 'custom' && (
+              <div className="summary-item">
+                <span className="summary-label">Pattern Types:</span>
+                <span className="summary-value">
+                  {[
+                    customConfig.includeBasicMotions && 'Basic Motions',
+                    customConfig.includeFightingGameMotions && 'Fighting Game Motions', 
+                    customConfig.includeComboTraining && 'Combo Training'
+                  ].filter(Boolean).join(', ') || 'None selected'}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 

@@ -23,10 +23,11 @@
 
 .header-content {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   max-width: 1200px;
   margin: 0 auto;
+  position: relative;
 }
 
 .header-title {
@@ -34,6 +35,7 @@
   transition: all 0.3s ease;
   padding: 10px;
   border-radius: 10px;
+  text-align: center;
 }
 
 .header-title:hover {
@@ -53,6 +55,8 @@
   display: flex;
   align-items: center;
   gap: 15px;
+  position: absolute;
+  right: 0;
 }
 
 .theme-toggle-btn {
@@ -102,10 +106,17 @@
   .header-content {
     flex-direction: column;
     gap: 15px;
+    align-items: center;
+    justify-content: center;
   }
   
   .header-title {
     text-align: center;
+  }
+  
+  .header-controls {
+    position: static;
+    justify-content: center !important;
   }
 }
 

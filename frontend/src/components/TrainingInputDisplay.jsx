@@ -196,6 +196,7 @@ const TrainingInputDisplay = () => {
         const newTime = prev - 100
         
         if (newTime <= 100) {
+          console.log('⏰ Timer reached zero! Triggering timeout...')
           // Time's up - mark as failed
           if (timerRef.current) {
             clearInterval(timerRef.current)
@@ -203,10 +204,14 @@ const TrainingInputDisplay = () => {
           }
           // Use timeoutRef to ensure this only runs once
           if (!timeoutRef.current) {
+            console.log('🔄 Setting up timeout callback...')
             timeoutRef.current = setTimeout(() => {
+              console.log('🚀 Calling handleInputTimeout...')
               handleInputTimeout()
               timeoutRef.current = null
             }, 0)
+          } else {
+            console.log('⚠️ Timeout already scheduled, skipping...')
           }
           return 0
         }
@@ -296,23 +301,29 @@ const TrainingInputDisplay = () => {
 
   // Handle input timeout
   const handleInputTimeout = () => {
+    console.log('🕐 Timeout triggered!', { timeoutCount: timeoutCount.current })
     timeoutCount.current += 1
 
     if (isCompleted) {
+      console.log('❌ Timeout ignored - already completed')
       return
     }
     setIsCompleted(true)
     setShowFeedback('fail')
 
-    // Update score for failed attempt
-    const currentScore = currentSession?.score || { totalInputs: 0, correctInputs: 0, accuracy: 0, points: 0 }
+    // Update score for failed attempt - get current score from store to ensure we have the latest
+    const { currentSession: latestSession } = useTrainingStore.getState()
+    const currentScore = latestSession?.score || { totalInputs: 0, correctInputs: 0, accuracy: 0, points: 0 }
+    console.log('📊 Before timeout update:', currentScore)
+    
     const newScore = {
       totalInputs: currentScore.totalInputs + 1,
       correctInputs: currentScore.correctInputs,
       points: currentScore.points || 0, // No points for timeout
       accuracy: (currentScore.correctInputs / (currentScore.totalInputs + 1)) * 100
     }
-
+    
+    console.log('📊 After timeout update:', newScore)
     updateSessionScore(newScore)
 
     // Start new input after delay
@@ -402,23 +413,13 @@ const TrainingInputDisplay = () => {
         })
       }, 100)
 
-      // Check if this wrong input would exceed the target
-      const currentScore = currentSession?.score || { totalInputs: 0, correctInputs: 0, accuracy: 0, points: 0 }
-      const targetInputs = currentSession?.targetInputs || 10
-      
-      if (currentScore.totalInputs >= targetInputs) {
-        // Already at or past target - don't increment progress further
-      } else {
-        // Update score for wrong inputs - increment progress by 1 but don't affect accuracy calculation
-        const newScore = {
-          totalInputs: currentScore.totalInputs + 1,
-          correctInputs: currentScore.correctInputs,
-          points: currentScore.points || 0,
-          // Don't recalculate accuracy for wrong inputs - keep the existing accuracy
-          accuracy: currentScore.accuracy || 0
-        }
-        updateSessionScore(newScore)
-      }
+      // Don't update progress for wrong inputs - progress should only be made on completion or timeout
+      // This ensures progress is only made when user finishes all their input or when time is up
+      console.log('❌ Wrong input (no progress):', {
+        expected: expectedFirstInput,
+        actual: lastInput,
+        inputStartCount: inputStartCountRef.current
+      })
 
       // Clear wrong input feedback after a short delay
       setTimeout(() => {
@@ -604,28 +605,6 @@ const TrainingInputDisplay = () => {
             </div>
           )}
         </div>
-      )}
-
-      {/* Debug button for testing timeout */}
-      {process.env.NODE_ENV === 'development' && (
-        <button 
-          onClick={() => {
-            handleInputTimeout()
-          }}
-          style={{
-            position: 'absolute',
-            top: '10px',
-            right: '10px',
-            background: '#ff6b6b',
-            color: 'white',
-            border: 'none',
-            padding: '5px 10px',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          Test Timeout
-        </button>
       )}
     </div>
   )

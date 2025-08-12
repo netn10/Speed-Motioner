@@ -17,7 +17,7 @@ export const useTrainingStore = create(
       sessions: [],
       
       // Actions
-      startTrainingSession: (mode, difficulty, targetInputs = 10, customTiming = null) => {
+      startTrainingSession: (mode, difficulty, targetInputs = 10, customTiming = null, customConfig = null) => {
         const sessionId = `session_${Date.now()}`
         const now = Date.now()
         const session = {
@@ -28,6 +28,7 @@ export const useTrainingStore = create(
           endTime: null,
           targetInputs: targetInputs,
           customTiming: customTiming, // Store custom timing for custom mode
+          customConfig: customConfig, // Store custom challenge configuration
           score: {
             totalInputs: 0,
             correctInputs: 0,
@@ -138,18 +139,24 @@ export const useTrainingStore = create(
       },
       
       updateSessionScore: (scoreUpdate) => {
+        console.log('🔄 updateSessionScore called with:', scoreUpdate)
         const { currentSession } = get()
         if (!currentSession) {
+          console.log('❌ No current session, cannot update score')
           return
         }
+        
+        console.log('📊 Current session score before update:', currentSession.score)
+        const updatedScore = {
+          ...currentSession.score,
+          ...scoreUpdate
+        }
+        console.log('📊 Updated session score:', updatedScore)
         
         set({
           currentSession: {
             ...currentSession,
-            score: {
-              ...currentSession.score,
-              ...scoreUpdate
-            }
+            score: updatedScore
           }
         })
       },
