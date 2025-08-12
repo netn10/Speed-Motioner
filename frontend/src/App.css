@@ -1,0 +1,50 @@
+.App {
+  text-align: center;
+  min-height: 100vh;
+  transition: all 0.3s ease;
+}
+
+.App.light {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  color: #2c3e50;
+}
+
+.App.dark {
+  background: #1a1a1a;
+  color: white;
+}
+
+.App-header {
+  position: relative;
+  overflow: hidden;
+}
+
+.App-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(255, 107, 107, 0.1), rgba(78, 205, 196, 0.1));
+  z-index: -1;
+}
+
+main {
+  position: relative;
+  z-index: 1;
+}
+
+/* Animation for the header text */
+.App-header h1 {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 5px rgba(255, 107, 107, 0.5), 0 0 10px rgba(78, 205, 196, 0.5);
+  }
+  to {
+    text-shadow: 0 0 10px rgba(255, 107, 107, 0.8), 0 0 20px rgba(78, 205, 196, 0.8);
+  }
+}

@@ -1,0 +1,13 @@
+@echo off
+echo 🚀 Starting Speed Motioner...
+
+echo 🔄 Killing existing processes...
+taskkill /f /im node.exe >nul 2>&1
+
+echo 🎯 Starting servers...
+start "Backend" cmd /k "cd backend && npm run dev"
+start "Frontend" cmd /k "cd frontend && npm run dev"
+
+echo ✅ Both servers are starting in separate windows
+echo Press any key to exit...
+pause >nul

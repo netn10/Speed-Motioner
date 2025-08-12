@@ -1,0 +1,33 @@
+{
+  "name": "speed-motioner",
+  "version": "1.0.0",
+  "description": "A modern web-based fighting game training tool",
+  "main": "index.js",
+  "scripts": {
+    "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "start": "npm run kill-processes && concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "start:simple": "node start.js",
+    "kill-processes": "taskkill /f /im node.exe 2>nul || true",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "start:backend": "cd backend && npm start",
+    "test": "npm run test:frontend && npm run test:backend",
+    "test:frontend": "cd frontend && npm test",
+    "test:backend": "cd backend && npm test",
+    "lint": "cd frontend && npm run lint"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "keywords": [
+    "fighting-game",
+    "training",
+    "react",
+    "nodejs",
+    "socket.io"
+  ],
+  "author": "Speed Motioner Team",
+  "license": "MIT"
+}

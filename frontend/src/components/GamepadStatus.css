@@ -1,0 +1,79 @@
+.gamepad-status {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(46, 204, 113, 0.9);
+  color: white;
+  padding: 15px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  max-width: 300px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.gamepad-status.disconnected {
+  background: rgba(231, 76, 60, 0.9);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gamepad-indicator {
+  font-weight: 600;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gamepad-name {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  font-weight: normal;
+}
+
+.gamepad-info {
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.gamepad-info p {
+  margin: 5px 0;
+  opacity: 0.9;
+}
+
+.current-inputs {
+  margin-top: 10px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  border-left: 3px solid rgba(255, 255, 255, 0.5);
+}
+
+.current-inputs p {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 768px) {
+  .gamepad-status {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+    font-size: 0.8rem;
+  }
+}

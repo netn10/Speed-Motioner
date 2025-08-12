@@ -1,0 +1,272 @@
+.training-input-display {
+  position: relative;
+  width: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-bottom: 3px solid rgba(255, 255, 255, 0.2);
+  border-radius: 15px 15px 0 0;
+  margin-bottom: 1rem;
+}
+
+.training-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.training-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.difficulty-badge {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.input-instruction {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.instruction-text {
+  font-size: 1.1rem;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.input-sequence {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.input-key {
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  min-width: 40px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.input-key:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.input-key::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+  border-radius: 6px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.input-key:hover::after {
+  opacity: 1;
+}
+
+.input-key.completed {
+  background: rgba(46, 204, 113, 0.3);
+  border-color: rgba(46, 204, 113, 0.6);
+  color: #2ecc71;
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(46, 204, 113, 0.4);
+}
+
+/* Progress Styles */
+.progress-container {
+  margin: 15px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  opacity: 0.9;
+  min-width: 120px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2ecc71 0%, #27ae60 100%);
+  transition: width 0.3s ease;
+  border-radius: 4px;
+}
+
+/* Timer Styles */
+.timer-container {
+  margin: 15px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.timer-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  opacity: 0.9;
+  min-width: 100px;
+}
+
+.timer-bar {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.timer-fill {
+  height: 100%;
+  transition: width 0.1s linear, background-color 0.3s ease;
+  border-radius: 4px;
+}
+
+.timer-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  min-width: 40px;
+  text-align: right;
+}
+
+/* Feedback Styles */
+.feedback-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 25px;
+  border-radius: 10px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  z-index: 10;
+  animation: feedbackPulse 0.5s ease-out;
+}
+
+.feedback-message.success {
+  background: rgba(46, 204, 113, 0.9);
+  color: white;
+  box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+}
+
+.feedback-message.fail {
+  background: rgba(231, 76, 60, 0.9);
+  color: white;
+  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+}
+
+.feedback-icon {
+  font-size: 1.5rem;
+}
+
+.feedback-text {
+  font-size: 1.1rem;
+}
+
+/* Feedback animations */
+.training-input-display.feedback-success {
+  animation: successFlash 0.6s ease-out;
+}
+
+.training-input-display.feedback-fail {
+  animation: failFlash 0.6s ease-out;
+}
+
+@keyframes feedbackPulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes successFlash {
+  0%, 100% {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  50% {
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+  }
+}
+
+@keyframes failFlash {
+  0%, 100% {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  50% {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .training-input-display {
+    padding: 15px;
+  }
+  
+  .training-header h3 {
+    font-size: 1.2rem;
+  }
+  
+  .instruction-text {
+    font-size: 1rem;
+  }
+  
+  .input-key {
+    padding: 6px 10px;
+    font-size: 1rem;
+    min-width: 35px;
+  }
+  
+  .input-sequence {
+    gap: 6px;
+  }
+}
