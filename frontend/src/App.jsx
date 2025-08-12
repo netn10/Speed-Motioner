@@ -13,6 +13,7 @@ import './test/progress-test'
 import './test/wrong-input-test'
 import './test/timeout-test'
 import './test/training-completion-test'
+import './test/progress-fix-test'
 
 function App() {
   const { theme } = useSettingsStore()

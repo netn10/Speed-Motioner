@@ -7,7 +7,6 @@ import './TrainingInputDisplay.css'
 
 const TrainingInputDisplay = () => {
   const { currentSession, updateSessionScore, endTrainingSession } = useTrainingStore()
-  const { addInput } = useGameStore()
   const trainingMode = currentSession?.mode || 'motion'
   const difficulty = currentSession?.difficulty || 'medium'
   const inputButtons = useInputButtons()
@@ -16,7 +15,7 @@ const TrainingInputDisplay = () => {
   const [inputIndex, setInputIndex] = useState(0)
   const [timeRemaining, setTimeRemaining] = useState(0)
   const [isCompleted, setIsCompleted] = useState(false)
-  const [showFeedback, setShowFeedback] = useState(null) // 'success' or 'fail'
+  const [showFeedback, setShowFeedback] = useState(null) // 'success', 'fail', or 'wrong'
   const [pointsEarned, setPointsEarned] = useState(0)
   const [forceUpdate, setForceUpdate] = useState(0) // Force re-render when needed
   const timerRef = useRef(null)
@@ -258,11 +257,6 @@ const TrainingInputDisplay = () => {
       timeoutRef.current = null
     }
 
-    // Add each input from the successful sequence to the game store for combo tracking
-    currentInput.forEach(input => {
-      addInput(input)
-    })
-
     // Calculate completion time and points
     const completionTime = Date.now() - inputStartTimeRef.current
     const maxTime = getDifficultyTiming()
@@ -293,7 +287,7 @@ const TrainingInputDisplay = () => {
       correctInputs: currentScore.correctInputs + 1,
       points: (currentScore.points || 0) + totalPoints,
       accuracy: ((currentScore.correctInputs + 1) / (currentScore.totalInputs + 1)) * 100,
-      maxCombo: Math.max(currentScore.maxCombo || 0, currentScore.correctInputs + 1)
+      maxCombo: Math.max(currentScore.maxCombo || 0, currentScore.correctInputs + 1) // This tracks total correct inputs, not max combo streak
     }
 
     updateSessionScore(newScore)
@@ -421,27 +415,100 @@ const TrainingInputDisplay = () => {
       }
     }
 
-    // Check for wrong inputs and update score
+    // Check for wrong inputs and update progress by 1
     const lastInput = newInputs[newInputs.length - 1]
     const expectedFirstInput = currentInput[0]
 
-    // If this is a new input that doesn't match what we expect, count it as wrong
+    // If this is a new input that doesn't match what we expect, increment progress by 1
     if (lastInput !== expectedFirstInput && inputIndex === 0) {
-      console.log('❌ Wrong input:', {
+      console.log('❌ Wrong input (incrementing progress by 1):', {
         expected: expectedFirstInput,
         actual: lastInput,
         inputStartCount: inputStartCountRef.current
       })
 
-      // Update score for wrong input
-      const currentScore = currentSession?.score || { totalInputs: 0, correctInputs: 0, accuracy: 0, points: 0 }
-      const newScore = {
-        totalInputs: currentScore.totalInputs + 1,
-        correctInputs: currentScore.correctInputs,
-        points: currentScore.points || 0, // No points for wrong input
-        accuracy: currentScore.correctInputs > 0 ? (currentScore.correctInputs / (currentScore.totalInputs + 1)) * 100 : 0
+      // Show wrong input feedback
+      setShowFeedback('wrong')
+
+      // Reset timer for wrong input
+      console.log('⏱️ Resetting timer due to wrong input')
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+        timerRef.current = null
       }
-      updateSessionScore(newScore)
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
+
+      // Reset timer to full duration
+      const timing = getDifficultyTiming()
+      setTimeRemaining(timing)
+      inputStartTimeRef.current = Date.now()
+
+      // Start new timer
+      timerRef.current = setInterval(() => {
+        setTimeRemaining(prev => {
+          const newTime = prev - 100
+          console.log('⏱️ Timer tick (after wrong input):', { prev, newTime, willTimeout: newTime <= 100, timerId: timerRef.current })
+          
+          if (newTime <= 100) {
+            // Time's up - mark as failed
+            console.log('⏰ Timer reached 0 after wrong input, calling handleInputTimeout')
+            if (timerRef.current) {
+              clearInterval(timerRef.current)
+              timerRef.current = null
+            }
+            // Use timeoutRef to ensure this only runs once
+            if (!timeoutRef.current) {
+              timeoutRef.current = setTimeout(() => {
+                handleInputTimeout()
+                timeoutRef.current = null
+              }, 0)
+            }
+            return 0
+          }
+          return newTime
+        })
+      }, 100)
+
+      // Check if this wrong input would exceed the target
+      const currentScore = currentSession?.score || { totalInputs: 0, correctInputs: 0, accuracy: 0, points: 0 }
+      const targetInputs = currentSession?.targetInputs || 10
+      
+      if (currentScore.totalInputs >= targetInputs) {
+        // Already at or past target - don't increment progress further
+        console.log('🚫 Wrong input ignored - already at target:', {
+          currentTotalInputs: currentScore.totalInputs,
+          targetInputs,
+          actual: lastInput,
+          expected: expectedFirstInput
+        })
+      } else {
+        // Update score for wrong inputs - increment progress by 1 but don't affect accuracy calculation
+        const newScore = {
+          totalInputs: currentScore.totalInputs + 1,
+          correctInputs: currentScore.correctInputs,
+          points: currentScore.points || 0,
+          // Don't recalculate accuracy for wrong inputs - keep the existing accuracy
+          accuracy: currentScore.accuracy || 0
+        }
+        updateSessionScore(newScore)
+
+        console.log('📊 Updated score after wrong input:', {
+          currentScore,
+          newScore,
+          difference: {
+            totalInputs: newScore.totalInputs - currentScore.totalInputs,
+            correctInputs: newScore.correctInputs - currentScore.correctInputs
+          }
+        })
+      }
+
+      // Clear wrong input feedback after a short delay
+      setTimeout(() => {
+        setShowFeedback(null)
+      }, 1000)
     }
   }, [inputs, currentInput, isCompleted, inputIndex])
 
@@ -514,31 +581,32 @@ const TrainingInputDisplay = () => {
     })
     
     if (currentProgress >= targetInputs && !isCompleted) {
-      // End training session when progress reaches or exceeds target
-      console.log('🎯 Training target reached! Ending session.', {
+      // End training session immediately when progress reaches or exceeds target
+      console.log('🎯 Training target reached! Ending session immediately.', {
         currentProgress,
         targetInputs,
         isCompleted
       })
       
       setIsCompleted(true)
-      setShowFeedback('success')
+      // Don't show success feedback here - this could be triggered by a timeout or wrong input
+      // Only show success feedback when an actual successful input completion happens
       
       // Clear timer
       if (timerRef.current) {
-        console.log('⏹️ Clearing timer due to completion')
+        console.log('⏹️ Clearing timer due to immediate completion')
         clearInterval(timerRef.current)
         timerRef.current = null
       }
       if (timeoutRef.current) {
-        console.log('⏹️ Clearing timeout due to completion')
+        console.log('⏹️ Clearing timeout due to immediate completion')
         clearTimeout(timeoutRef.current)
         timeoutRef.current = null
       }
       
-      // End session after delay
+      // End session immediately
       setTimeout(() => {
-        console.log('🏁 Ending training session')
+        console.log('🏁 Ending training session immediately')
         endTrainingSession(currentSession.score)
       }, 1000)
     }
@@ -628,6 +696,12 @@ const TrainingInputDisplay = () => {
             <div>
               <span className="fail-icon">❌</span>
               <span>Time's up!</span>
+            </div>
+          )}
+          {showFeedback === 'wrong' && (
+            <div>
+              <span className="wrong-icon">❌</span>
+              <span>Wrong Input!</span>
             </div>
           )}
         </div>
