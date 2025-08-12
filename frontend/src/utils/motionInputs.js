@@ -393,6 +393,11 @@ export const generateCustomTrainingPatterns = (inputButtons, activeAttackButtons
       [inputButtons.up, activeAttackButtons[0], inputButtons.down] // up + attack + down
     )
   }
+
+  // Custom combos from user
+  if (customConfig.includeCustomCombo && customConfig.customCombo) {
+    patterns.push(customConfig.customCombo.inputs)
+  }
   
   return patterns
 }

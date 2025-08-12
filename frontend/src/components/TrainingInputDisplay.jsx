@@ -18,6 +18,9 @@ const TrainingInputDisplay = () => {
   const [showFeedback, setShowFeedback] = useState(null) // 'success', 'fail', or 'wrong'
   const [pointsEarned, setPointsEarned] = useState(0)
   const [forceUpdate, setForceUpdate] = useState(0) // Force re-render when needed
+  const [showCountdown, setShowCountdown] = useState(true) // New state for countdown
+  const [countdownNumber, setCountdownNumber] = useState(3) // Countdown number
+  const [hasShownCountdown, setHasShownCountdown] = useState(false) // Track if countdown has been shown
   const timerRef = useRef(null)
   const timeoutRef = useRef(null)
   const inputStartTimeRef = useRef(null)
@@ -26,6 +29,46 @@ const TrainingInputDisplay = () => {
   const timeoutTriggeredRef = useRef(false)
   const startNewInputCallCount = useRef(0)
   const timeoutCount = useRef(0)
+
+  // Reset countdown when session changes
+  useEffect(() => {
+    if (currentSession) {
+      setShowCountdown(true)
+      setCountdownNumber(3)
+      setHasShownCountdown(false)
+    } else {
+      // If no session, hide countdown to prevent white screen
+      setShowCountdown(false)
+      setHasShownCountdown(true)
+    }
+  }, [currentSession?.id]) // Reset when session ID changes
+
+  // Scroll to training display when countdown starts or when session loads
+  useEffect(() => {
+    if (showCountdown || (currentSession && !hasShownCountdown)) {
+      // Scroll to the training display area (just below the header)
+      window.scrollTo({ top: 220, behavior: 'smooth' })
+    }
+  }, [showCountdown, currentSession, hasShownCountdown])
+
+  // Countdown effect - only show once per session
+  useEffect(() => {
+    if (!showCountdown || hasShownCountdown) return
+
+    const countdownInterval = setInterval(() => {
+      setCountdownNumber(prev => {
+        if (prev <= 1) {
+          setShowCountdown(false)
+          setHasShownCountdown(true)
+          clearInterval(countdownInterval)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 300) // Fast countdown - 300ms per number
+
+    return () => clearInterval(countdownInterval)
+  }, [showCountdown, hasShownCountdown])
 
   // Difficulty-based timing (in milliseconds)
   const getDifficultyTiming = () => {
@@ -104,6 +147,13 @@ const TrainingInputDisplay = () => {
       [activeAttackButtons[0], activeAttackButtons[0], activeAttackButtons[0]], // triple first attack
       [inputButtons.up, activeAttackButtons[0]], // up + attack
     ],
+    'custom-combos': (() => {
+      // Get custom combo from session config
+      if (currentSession?.customConfig?.customCombo) {
+        return [currentSession.customConfig.customCombo.inputs]
+      }
+      return []
+    })(),
     custom: [
       // Mixed patterns for custom challenge
       [inputButtons.up], // up
@@ -160,8 +210,15 @@ const TrainingInputDisplay = () => {
     startNewInputCallCount.current += 1
 
     const patterns = trainingPatterns[trainingMode] || trainingPatterns.motion
-    const randomIndex = Math.floor(Math.random() * patterns.length)
-    const selectedPattern = patterns[randomIndex]
+    let selectedPattern
+
+    // For custom combos, always use the same pattern (the selected custom combo)
+    if (trainingMode === 'custom-combos') {
+      selectedPattern = patterns[0] // Custom combos only have one pattern
+    } else {
+      const randomIndex = Math.floor(Math.random() * patterns.length)
+      selectedPattern = patterns[randomIndex]
+    }
 
     setCurrentInput(selectedPattern)
     setInputIndex(0)
@@ -221,8 +278,8 @@ const TrainingInputDisplay = () => {
   }
 
   useEffect(() => {
-    // Only start new input if we're not already processing
-    if (!processingSuccessRef.current) {
+    // Only start new input if we're not already processing and countdown is complete
+    if (!processingSuccessRef.current && !showCountdown) {
       startNewInput()
     }
 
@@ -235,7 +292,7 @@ const TrainingInputDisplay = () => {
         clearTimeout(timeoutRef.current)
       }
     }
-  }, [trainingMode, attackButtonMode]) // Removed stableInputButtons dependency
+  }, [trainingMode, attackButtonMode, showCountdown]) // Added showCountdown dependency
 
   // Handle successful input completion
   const handleInputSuccess = () => {
@@ -523,6 +580,15 @@ const TrainingInputDisplay = () => {
     return null
   }
 
+  // Show countdown overlay - only if countdown is active and hasn't been shown yet
+  if (showCountdown && !hasShownCountdown && currentSession) {
+    return (
+      <div className={`training-countdown ${theme}`}>
+        <div className="countdown-number">{countdownNumber}</div>
+      </div>
+    )
+  }
+
   if (!currentInput.length) {
     return null
   }
@@ -569,6 +635,16 @@ const TrainingInputDisplay = () => {
         {trainingMode === 'motions' && getMotionPatternName(currentInput) && (
           <div className="motion-pattern-name">
             {getMotionPatternName(currentInput)}
+          </div>
+        )}
+        {trainingMode === 'custom-combos' && currentSession?.customConfig?.customCombo && (
+          <div className="custom-combo-name">
+            {currentSession.customConfig.customCombo.name}
+            {currentSession.customConfig.customCombo.description && (
+              <div className="custom-combo-description">
+                {currentSession.customConfig.customCombo.description}
+              </div>
+            )}
           </div>
         )}
         <div className="input-sequence">

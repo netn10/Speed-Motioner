@@ -16,6 +16,9 @@ export const useTrainingStore = create(
       // Training session data
       sessions: [],
       
+      // Custom combos management
+      customCombos: [],
+      
       // Actions
       startTrainingSession: (mode, difficulty, targetInputs = 10, customTiming = null, customConfig = null) => {
         const sessionId = `session_${Date.now()}`
@@ -189,6 +192,53 @@ export const useTrainingStore = create(
             }
           }
         })
+      },
+      
+      // Custom combos management
+      saveCustomCombo: (combo) => {
+        const { customCombos } = get()
+        const newCombo = {
+          id: `combo_${Date.now()}`,
+          name: combo.name,
+          inputs: combo.inputs,
+          description: combo.description || '',
+          createdAt: Date.now(),
+          updatedAt: Date.now()
+        }
+        
+        const updatedCombos = [newCombo, ...customCombos]
+        set({ customCombos: updatedCombos })
+        return newCombo
+      },
+      
+      updateCustomCombo: (comboId, updates) => {
+        const { customCombos } = get()
+        const updatedCombos = customCombos.map(combo => 
+          combo.id === comboId 
+            ? { ...combo, ...updates, updatedAt: Date.now() }
+            : combo
+        )
+        set({ customCombos: updatedCombos })
+      },
+      
+      deleteCustomCombo: (comboId) => {
+        const { customCombos } = get()
+        const updatedCombos = customCombos.filter(combo => combo.id !== comboId)
+        set({ customCombos: updatedCombos })
+      },
+      
+      getCustomCombo: (comboId) => {
+        const { customCombos } = get()
+        return customCombos.find(combo => combo.id === comboId)
+      },
+      
+      getAllCustomCombos: () => {
+        const { customCombos } = get()
+        return customCombos
+      },
+      
+      clearCustomCombos: () => {
+        set({ customCombos: [] })
       },
       
       getLeaderboardByMode: (mode) => {

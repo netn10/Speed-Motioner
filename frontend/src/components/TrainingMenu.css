@@ -744,3 +744,124 @@
 .training-menu.dark .checkbox-label input[type="checkbox"] {
   accent-color: #64b5f6;
 }
+
+/* Custom Combo Selection Styles */
+.custom-combo-selection {
+  background: var(--bg-primary);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border-color);
+}
+
+.custom-combo-selection h3 {
+  margin: 0 0 16px 0;
+  color: var(--text-primary);
+  font-size: 18px;
+}
+
+.selected-combo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  padding: 16px;
+  border: 2px solid var(--accent-color);
+}
+
+.combo-info h4 {
+  margin: 0 0 8px 0;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.combo-info p {
+  margin: 0 0 8px 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.combo-info .combo-inputs {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.combo-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.change-combo-button {
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.change-combo-button:hover {
+  background: var(--accent-hover);
+}
+
+.clear-combo-button {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.clear-combo-button:hover {
+  background: var(--danger-color);
+  color: white;
+  border-color: var(--danger-color);
+}
+
+.no-combo-selected {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-secondary);
+}
+
+.no-combo-selected p {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+}
+
+.select-combo-button {
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.select-combo-button:hover {
+  background: var(--accent-hover);
+}
+
+/* Disabled button styles */
+.start-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.start-button:disabled:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}

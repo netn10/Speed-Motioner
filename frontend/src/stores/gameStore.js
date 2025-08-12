@@ -229,6 +229,14 @@ const checkComboValidity = (combo, trainingMode) => {
       [activeAttackButtons[0], activeAttackButtons[0], activeAttackButtons[0]], // triple first attack
       [inputButtons.up, activeAttackButtons[0]], // up + attack
     ],
+    'custom-combos': (() => {
+      // Get custom combo from training store
+      const { currentSession } = useTrainingStore.getState()
+      if (currentSession && currentSession.customConfig?.customCombo) {
+        return [currentSession.customConfig.customCombo.inputs]
+      }
+      return []
+    })(),
     custom: (() => {
       // Get custom configuration from training store
       const { currentSession } = useTrainingStore.getState()
@@ -332,6 +340,14 @@ const checkPartialComboValidity = (combo, trainingMode) => {
       [activeAttackButtons[0], activeAttackButtons[0], activeAttackButtons[0]], // triple first attack
       [inputButtons.up, activeAttackButtons[0]], // up + attack
     ],
+    'custom-combos': (() => {
+      // Get custom combo from training store
+      const { currentSession } = useTrainingStore.getState()
+      if (currentSession && currentSession.customConfig?.customCombo) {
+        return [currentSession.customConfig.customCombo.inputs]
+      }
+      return []
+    })(),
     custom: (() => {
       // Get custom configuration from training store
       const { currentSession } = useTrainingStore.getState()

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../stores/gameStore'
 import { useTrainingStore } from '../stores/trainingStore'
 import { useSettingsStore } from '../stores/settingsStore'
+import CustomComboManager from './CustomComboManager'
 import './TrainingMenu.css'
 
 const TrainingMenu = () => {
@@ -14,6 +15,8 @@ const TrainingMenu = () => {
   const [selectedDifficulty, setSelectedDifficulty] = useState('medium')
   const [customInputs, setCustomInputs] = useState(10)
   const [customSeconds, setCustomSeconds] = useState(2)
+  const [showComboManager, setShowComboManager] = useState(false)
+  const [selectedCustomCombo, setSelectedCustomCombo] = useState(null)
   
   // Custom Challenge configuration
   const [customConfig, setCustomConfig] = useState({
@@ -26,7 +29,8 @@ const TrainingMenu = () => {
     { id: 'motion', name: 'Basic Motion', description: 'Practice basic movement and attack inputs' },
     { id: 'motions', name: 'Fighting Game Motions', description: 'Practice QCF, QCB, DP, HCF, HCB, Charge, and Double motions' },
     { id: 'combos', name: 'Combo Training', description: 'Practice hit confirms and combos' },
-    { id: 'custom', name: 'Custom Challenge', description: 'Custom difficulty challenge mode' }
+    { id: 'custom', name: 'Custom Challenge', description: 'Custom difficulty challenge mode' },
+    { id: 'custom-combos', name: 'Custom Combos', description: 'Practice your own saved combos' }
   ]
 
   const difficulties = [
@@ -47,6 +51,12 @@ const TrainingMenu = () => {
       }
     }
 
+    // Validate custom combo selection
+    if (selectedMode === 'custom-combos' && !selectedCustomCombo) {
+      alert('Please select a custom combo to practice!')
+      return
+    }
+
     // Reset game state
     resetGame()
 
@@ -57,9 +67,18 @@ const TrainingMenu = () => {
     // Get target inputs based on difficulty
     let targetInputs = 10 // default
     let customTiming = 2000 // default 2 seconds
+    let customComboConfig = null
+
     if (selectedMode === 'custom') {
       targetInputs = customInputs
       customTiming = customSeconds * 1000 // convert to milliseconds
+    } else if (selectedMode === 'custom-combos') {
+      targetInputs = selectedCustomCombo.inputs.length
+      customTiming = 2000 // 2 seconds per input for custom combos
+      customComboConfig = {
+        customCombo: selectedCustomCombo,
+        includeCustomCombo: true
+      }
     } else {
       switch (selectedDifficulty) {
         case 'easy': targetInputs = 5; break
@@ -70,10 +89,38 @@ const TrainingMenu = () => {
     }
 
     // Start new training session with duration, custom timing, and custom config
-    startTrainingSession(selectedMode, selectedDifficulty, targetInputs, customTiming, customConfig)
+    startTrainingSession(selectedMode, selectedDifficulty, targetInputs, customTiming, customComboConfig)
 
     // Navigate to game
     navigate('/game')
+  }
+
+  const handleComboSelect = (combo) => {
+    setSelectedCustomCombo(combo)
+    setShowComboManager(false)
+  }
+
+  const handleOpenComboManager = () => {
+    setShowComboManager(true)
+  }
+
+  const handleCloseComboManager = () => {
+    setShowComboManager(false)
+  }
+
+  const clearSelectedCombo = () => {
+    setSelectedCustomCombo(null)
+  }
+
+  if (showComboManager) {
+    return (
+      <div className={`training-menu ${theme}`}>
+        <CustomComboManager 
+          onComboSelect={handleComboSelect}
+          onClose={handleCloseComboManager}
+        />
+      </div>
+    )
   }
 
   return (
@@ -107,7 +154,41 @@ const TrainingMenu = () => {
           </div>
         </div>
 
-        {selectedMode !== 'custom' && (
+        {selectedMode === 'custom-combos' && (
+          <div className="custom-combo-selection">
+            <h3>Custom Combo Selection</h3>
+            {selectedCustomCombo ? (
+              <div className="selected-combo">
+                <div className="combo-info">
+                  <h4>{selectedCustomCombo.name}</h4>
+                  {selectedCustomCombo.description && (
+                    <p>{selectedCustomCombo.description}</p>
+                  )}
+                  <div className="combo-inputs">
+                    <strong>Inputs:</strong> {selectedCustomCombo.inputs.join(' → ')}
+                  </div>
+                </div>
+                <div className="combo-actions">
+                  <button className="change-combo-button" onClick={handleOpenComboManager}>
+                    Change Combo
+                  </button>
+                  <button className="clear-combo-button" onClick={clearSelectedCombo}>
+                    Clear
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="no-combo-selected">
+                <p>No custom combo selected</p>
+                <button className="select-combo-button" onClick={handleOpenComboManager}>
+                  Select Custom Combo
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {selectedMode !== 'custom' && selectedMode !== 'custom-combos' && (
           <div className="difficulty-selection">
             <h3>Difficulty</h3>
             <div className="difficulty-grid">
@@ -222,7 +303,7 @@ const TrainingMenu = () => {
               <span className="summary-label">Mode:</span>
               <span className="summary-value">{trainingModes.find(m => m.id === selectedMode)?.name}</span>
             </div>
-            {selectedMode !== 'custom' && (
+            {selectedMode !== 'custom' && selectedMode !== 'custom-combos' && (
               <div className="summary-item">
                 <span className="summary-label">Difficulty:</span>
                 <span className="summary-value">{difficulties.find(d => d.id === selectedDifficulty)?.name}</span>
@@ -233,6 +314,10 @@ const TrainingMenu = () => {
               <span className="summary-value">
                 {selectedMode === 'custom' 
                   ? `${customInputs} inputs, ${customSeconds}s per input`
+                  : selectedMode === 'custom-combos'
+                  ? selectedCustomCombo 
+                    ? `${selectedCustomCombo.inputs.length} inputs, 2s per input`
+                    : 'No combo selected'
                   : `${selectedDifficulty === 'easy' ? 5 : selectedDifficulty === 'hard' ? 20 : 10} inputs`
                 }
               </span>
@@ -249,10 +334,20 @@ const TrainingMenu = () => {
                 </span>
               </div>
             )}
+            {selectedMode === 'custom-combos' && selectedCustomCombo && (
+              <div className="summary-item">
+                <span className="summary-label">Selected Combo:</span>
+                <span className="summary-value">{selectedCustomCombo.name}</span>
+              </div>
+            )}
           </div>
         </div>
 
-        <button className="start-button" onClick={handleStartTraining}>
+        <button 
+          className="start-button" 
+          onClick={handleStartTraining}
+          disabled={selectedMode === 'custom-combos' && !selectedCustomCombo}
+        >
           Start Training
         </button>
       </div>
