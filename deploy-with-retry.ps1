@@ -78,6 +78,15 @@ function Invoke-CommandSafe {
 function Build-Frontend {
     Write-ColorOutput "`n[BUILD] Building frontend application..." $Cyan
     
+    # Clean previous build
+    Write-ColorOutput "[INFO] Cleaning previous build..." $Blue
+    if (Test-Path "frontend\dist") {
+        Remove-Item "frontend\dist" -Recurse -Force
+    }
+    if (Test-Path "backend\public") {
+        Remove-Item "backend\public" -Recurse -Force
+    }
+    
     # Build frontend
     if (-not (Invoke-CommandSafe "npm run build:local" "Building frontend")) {
         return $false
@@ -86,6 +95,13 @@ function Build-Frontend {
     # Check if build was successful
     if (-not (Test-Path "frontend\dist\index.html")) {
         Write-ColorOutput "[ERROR] Frontend build failed - index.html not found" $Red
+        return $false
+    }
+    
+    # Verify JavaScript file exists
+    $jsFiles = Get-ChildItem "frontend\dist\assets\*.js" -ErrorAction SilentlyContinue
+    if ($jsFiles.Count -eq 0) {
+        Write-ColorOutput "[ERROR] Frontend build failed - no JavaScript files found" $Red
         return $false
     }
     
@@ -109,7 +125,15 @@ function Build-Frontend {
         return $false
     }
     
+    # Verify JavaScript file was copied
+    $backendJsFiles = Get-ChildItem "backend\public\assets\*.js" -ErrorAction SilentlyContinue
+    if ($backendJsFiles.Count -eq 0) {
+        Write-ColorOutput "[ERROR] Failed to copy JavaScript files to backend" $Red
+        return $false
+    }
+    
     Write-ColorOutput "[SUCCESS] Frontend files copied to backend" $Green
+    Write-ColorOutput "[INFO] JavaScript file: $($backendJsFiles[0].Name)" $Blue
     return $true
 }
 
