@@ -155,7 +155,7 @@ function Test-HerokuDeployment {
     
     # Test the deployed application
     try {
-        $herokuUrl = "https://$AppName.herokuapp.com"
+        $herokuUrl = "https://$AppName-640587c36085.herokuapp.com"
         Write-ColorOutput "[INFO] Testing deployed application at $herokuUrl" $Blue
         
         $response = Invoke-WebRequest -Uri $herokuUrl -TimeoutSec 30 -ErrorAction Stop
