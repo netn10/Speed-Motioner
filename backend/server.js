@@ -22,6 +22,9 @@ app.use(helmet())
 app.use(cors())
 app.use(express.json())
 
+// Serve static files from the public directory
+app.use(express.static('public'))
+
 // Game manager instance
 const gameManager = new GameManager()
 
@@ -32,6 +35,11 @@ app.get('/api/health', (req, res) => {
 
 app.get('/api/game-state', (req, res) => {
   res.json(gameManager.getGameState())
+})
+
+// Serve the main application
+app.get('/', (req, res) => {
+  res.sendFile('index.html', { root: 'public' })
 })
 
 // Socket.IO connection handling

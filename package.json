@@ -8,10 +8,12 @@
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "start": "npm run kill-processes && concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "start:simple": "node start.js",
+    "start:heroku": "cd backend && npm start",
     "kill-processes": "taskkill /f /im node.exe 2>nul || true",
     "dev:frontend": "cd frontend && npm run dev",
     "dev:backend": "cd backend && npm run dev",
     "build": "cd frontend && npm run build",
+    "build:heroku": "npm run build && cp -r frontend/dist backend/public",
     "start:backend": "cd backend && npm start",
     "test": "npm run test:frontend && npm run test:backend",
     "test:frontend": "cd frontend && npm test",
@@ -21,7 +23,14 @@
     "deploy:github": "git add . && git commit -m \"Auto-deploy: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')\" && git push origin main",
     "deploy:heroku": "git push heroku main",
     "deploy:full": "npm run build && npm run deploy:github && npm run deploy:heroku",
-    "setup:heroku": "heroku buildpacks:clear --app speed-motioner-640587c36085 && heroku buildpacks:add heroku/nodejs --app speed-motioner-640587c36085"
+    "setup:heroku": "heroku buildpacks:clear --app speed-motioner && heroku buildpacks:add heroku/nodejs --app speed-motioner"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "dotenv": "^16.3.1"
   },
   "devDependencies": {
     "concurrently": "^8.2.0"

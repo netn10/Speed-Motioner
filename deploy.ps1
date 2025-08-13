@@ -145,7 +145,7 @@ function Start-Deployment {
     Write-ColorOutput "`n[INFO] Deploying to Heroku..." $Blue
     
     # Check if Heroku app is configured
-    $herokuApp = "speed-motioner-640587c36085"
+    $herokuApp = "speed-motioner"
     
     # Set Heroku buildpacks if needed
     Write-ColorOutput "[INFO] Configuring Heroku buildpacks..." $Blue
