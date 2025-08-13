@@ -3,7 +3,7 @@ import { useSettingsStore } from '../stores/settingsStore'
 import './InputDisplay.css'
 
 const InputDisplay = ({ inputs }) => {
-  const { inputButtons, attackButtonMode, theme } = useSettingsStore()
+  const { inputButtons, attackButtonMode, attackDisplayMode, theme } = useSettingsStore()
 
   const getInputColor = (input) => {
     const colors = {
@@ -20,18 +20,18 @@ const InputDisplay = ({ inputs }) => {
       arrowdown: '#2ecc71', // arrow down
       arrowright: '#f39c12', // arrow right
       // Attack colors - using the actual key mappings
-      [inputButtons.lp]: '#9b59b6', // Light Punch
-      [inputButtons.mp]: '#e67e22', // Medium Punch
-      [inputButtons.hp]: '#e74c3c', // Heavy Punch
-      [inputButtons.lk]: '#2ecc71', // Light Kick
-      [inputButtons.mk]: '#f39c12', // Medium Kick
-      [inputButtons.hk]: '#1abc9c'  // Heavy Kick
+      [inputButtons.lp]: '#3498db', // Light Punch (blue)
+      [inputButtons.mp]: '#f39c12', // Medium Punch (yellow)
+      [inputButtons.hp]: '#e74c3c', // Heavy Punch (red)
+      [inputButtons.lk]: '#3498db', // Light Kick (blue)
+      [inputButtons.mk]: '#f39c12', // Medium Kick (yellow)
+      [inputButtons.hk]: '#e74c3c'  // Heavy Kick (red)
     }
     return colors[input] || '#95a5a6'
   }
 
   const getInputLabel = (input) => {
-    const labels = {
+    const movementLabels = {
       w: '↑',
       a: '←',
       s: '↓',
@@ -43,31 +43,59 @@ const InputDisplay = ({ inputs }) => {
       arrowup: '↑',
       arrowleft: '←',
       arrowdown: '↓',
-      arrowright: '→',
-      // Map keys to attack names
-      [inputButtons.lp]: 'LP',
-      [inputButtons.mp]: 'MP',
-      [inputButtons.hp]: 'HP',
-      [inputButtons.lk]: 'LK',
-      [inputButtons.mk]: 'MK',
-      [inputButtons.hk]: 'HK'
+      arrowright: '→'
     }
-    return labels[input] || input.toUpperCase()
+
+    // Return movement labels as they are
+    if (movementLabels[input]) {
+      return movementLabels[input]
+    }
+
+    // Handle attack buttons based on display mode
+    if (attackDisplayMode === 'icons') {
+      const iconLabels = {
+        [inputButtons.lp]: '✊',
+        [inputButtons.mp]: '✊',
+        [inputButtons.hp]: '✊',
+        [inputButtons.lk]: '🦵',
+        [inputButtons.mk]: '🦵',
+        [inputButtons.hk]: '🦵'
+      }
+      return iconLabels[input] || input.toUpperCase()
+    } else {
+      // Text mode
+      const textLabels = {
+        [inputButtons.lp]: 'LP',
+        [inputButtons.mp]: 'MP',
+        [inputButtons.hp]: 'HP',
+        [inputButtons.lk]: 'LK',
+        [inputButtons.mk]: 'MK',
+        [inputButtons.hk]: 'HK'
+      }
+      return textLabels[input] || input.toUpperCase()
+    }
   }
 
   // Get active attack buttons based on mode
   const getActiveAttackButtons = () => {
-    const allAttackButtons = [
-      { key: inputButtons.lp, label: 'LP', name: 'Light Punch' },
-      { key: inputButtons.mp, label: 'MP', name: 'Medium Punch' },
-      { key: inputButtons.hp, label: 'HP', name: 'Heavy Punch' },
-      { key: inputButtons.lk, label: 'LK', name: 'Light Kick' },
-      { key: inputButtons.mk, label: 'MK', name: 'Medium Kick' },
-      { key: inputButtons.hk, label: 'HK', name: 'Heavy Kick' }
+    const allAttackButtons = attackDisplayMode === 'icons' ? [
+      { key: inputButtons.lp, label: '✊', name: 'Light Punch', color: '#3498db' },
+      { key: inputButtons.mp, label: '✊', name: 'Medium Punch', color: '#f39c12' },
+      { key: inputButtons.hp, label: '✊', name: 'Heavy Punch', color: '#e74c3c' },
+      { key: inputButtons.lk, label: '🦵', name: 'Light Kick', color: '#3498db' },
+      { key: inputButtons.mk, label: '🦵', name: 'Medium Kick', color: '#f39c12' },
+      { key: inputButtons.hk, label: '🦵', name: 'Heavy Kick', color: '#e74c3c' }
+    ] : [
+      { key: inputButtons.lp, label: 'LP', name: 'Light Punch', color: '#3498db' },
+      { key: inputButtons.mp, label: 'MP', name: 'Medium Punch', color: '#f39c12' },
+      { key: inputButtons.hp, label: 'HP', name: 'Heavy Punch', color: '#e74c3c' },
+      { key: inputButtons.lk, label: 'LK', name: 'Light Kick', color: '#3498db' },
+      { key: inputButtons.mk, label: 'MK', name: 'Medium Kick', color: '#f39c12' },
+      { key: inputButtons.hk, label: 'HK', name: 'Heavy Kick', color: '#e74c3c' }
     ]
 
     if (attackButtonMode === 4) {
-      return allAttackButtons.filter(btn => ['LP', 'MP', 'LK', 'MK'].includes(btn.label))
+      return allAttackButtons.filter(btn => [inputButtons.lp, inputButtons.mp, inputButtons.lk, inputButtons.mk].includes(btn.key))
     }
     return allAttackButtons
   }
@@ -80,13 +108,16 @@ const InputDisplay = ({ inputs }) => {
       <div className="input-list">
         {inputs && inputs.length > 0 ? (
           inputs.slice(-10).reverse().map((input, index) => (
-            <div
-              key={index}
-              className="input-item"
-              style={{ backgroundColor: getInputColor(input) }}
-            >
-              {getInputLabel(input)}
-            </div>
+                         <div
+               key={index}
+               className="input-item"
+               style={{ 
+                 backgroundColor: getInputColor(input),
+                 color: attackDisplayMode === 'icons' && ['✊', '🦵'].includes(getInputLabel(input)) ? 'white' : 'inherit'
+               }}
+             >
+               {getInputLabel(input)}
+             </div>
           ))
         ) : (
           <div className="no-inputs">
@@ -111,17 +142,20 @@ const InputDisplay = ({ inputs }) => {
           <span className="legend-key" style={{ backgroundColor: '#f39c12' }}>→</span>
           <span>Move Right</span>
         </div>
-        {activeAttackButtons.map(btn => (
-          <div key={btn.key} className="legend-item">
-            <span
-              className="legend-key"
-              style={{ backgroundColor: getInputColor(btn.key) }}
-            >
-              {btn.label}
-            </span>
-            <span>{btn.name}</span>
-          </div>
-        ))}
+                 {activeAttackButtons.map(btn => (
+           <div key={btn.key} className="legend-item">
+             <span
+               className="legend-key"
+               style={{ 
+                 backgroundColor: btn.color, 
+                 color: attackDisplayMode === 'icons' ? 'white' : 'inherit'
+               }}
+             >
+               {btn.label}
+             </span>
+             <span>{btn.name}</span>
+           </div>
+         ))}
       </div>
     </div>
   )

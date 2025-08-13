@@ -10,6 +10,9 @@ export const useSettingsStore = create(
       // Attack button mode: 4 or 6 buttons
       attackButtonMode: 6, // 4 or 6
       
+      // Attack display mode: 'text' or 'icons'
+      attackDisplayMode: 'icons', // 'text' or 'icons'
+      
       // Input button settings
       inputButtons: {
         up: 'w',
@@ -23,10 +26,7 @@ export const useSettingsStore = create(
         lk: 'u', // Light Kick
         mk: 'i', // Medium Kick
         hk: 'o', // Heavy Kick
-        // Legacy buttons (kept for compatibility)
-        attack: 'j',
-        special: 'k',
-        block: 'l'
+
       },
 
       // Gamepad button mappings (button index -> action)
@@ -37,8 +37,6 @@ export const useSettingsStore = create(
         '3': 'mk', // Y button -> Medium Kick
         '4': 'hp', // Left Bumper -> Heavy Punch
         '5': 'hk', // Right Bumper -> Heavy Kick
-        '6': 'block', // Left Trigger
-        '7': 'special', // Right Trigger
         '8': 'start',
         '9': 'select',
         '10': 'ls',
@@ -65,6 +63,8 @@ export const useSettingsStore = create(
       
       setAttackButtonMode: (mode) => set({ attackButtonMode: mode }),
       
+      setAttackDisplayMode: (mode) => set({ attackDisplayMode: mode }),
+      
       setInputButton: (action, button) => set((state) => ({
         inputButtons: {
           ...state.inputButtons,
@@ -84,6 +84,7 @@ export const useSettingsStore = create(
       resetToDefaults: () => set({
         theme: 'dark',
         attackButtonMode: 6,
+        attackDisplayMode: 'icons',
         inputButtons: {
           up: 'w',
           down: 's',
@@ -94,10 +95,7 @@ export const useSettingsStore = create(
           hp: 'l',
           lk: 'u',
           mk: 'i',
-          hk: 'o',
-          attack: 'j',
-          special: 'k',
-          block: 'l'
+          hk: 'o'
         },
         gamepadButtons: {
           '0': 'lp',
@@ -106,8 +104,6 @@ export const useSettingsStore = create(
           '3': 'mk',
           '4': 'hp',
           '5': 'hk',
-          '6': 'block',
-          '7': 'special',
           '8': 'start',
           '9': 'select',
           '10': 'ls',
@@ -124,6 +120,7 @@ export const useSettingsStore = create(
       partialize: (state) => ({
         theme: state.theme,
         attackButtonMode: state.attackButtonMode,
+        attackDisplayMode: state.attackDisplayMode,
         inputButtons: state.inputButtons,
         gamepadButtons: state.gamepadButtons
       })

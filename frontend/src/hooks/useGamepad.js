@@ -22,10 +22,6 @@ export const useGamepad = () => {
     4: 'hp', // Left Bumper -> Heavy Punch
     5: 'hk', // Right Bumper -> Heavy Kick
     
-    // Triggers (can be used for additional attacks)
-    6: 'block', // Left Trigger
-    7: 'special', // Right Trigger
-    
     // Start/Select
     8: 'start',
     9: 'select',

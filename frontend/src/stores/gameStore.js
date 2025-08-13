@@ -140,6 +140,13 @@ export const useGameStore = create((set, get) => ({
     set({ comboCount: 0 })
   },
   
+  clearInputs: () => {
+    set({ 
+      inputs: [],
+      currentCombo: []
+    })
+  },
+  
   resetGame: () => {
     const now = Date.now()
     set({
@@ -223,11 +230,42 @@ const checkComboValidity = (combo, trainingMode) => {
       [inputButtons.down, inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // D-QCF + LP
     ],
     combos: [
+      // Basic 2-hit combos
       [activeAttackButtons[0], activeAttackButtons[0]], // double attack
       [activeAttackButtons[0], activeAttackButtons[1]], // first + second
       [activeAttackButtons[1], activeAttackButtons[0]], // second + first
+      
+      // 3-hit combos
       [activeAttackButtons[0], activeAttackButtons[0], activeAttackButtons[0]], // triple first attack
+      [activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0]], // LP -> MP -> LP
+      [activeAttackButtons[1], activeAttackButtons[0], activeAttackButtons[1]], // MP -> LP -> MP
+      [activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[2] || activeAttackButtons[1]], // LP -> MP -> HP/MP
+      
+      // 4-hit combos
+      [activeAttackButtons[0], activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[1]], // LP LP MP MP
+      [activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0], activeAttackButtons[1]], // LP MP LP MP
+      [activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[2] || activeAttackButtons[1], activeAttackButtons[0]], // LP MP HP LP
+      
+      // 5-hit combos
+      [activeAttackButtons[0], activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[1], activeAttackButtons[0]], // LP LP MP MP LP
+      [activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0]], // LP MP LP MP LP
+      
+      // Movement + attack combos (2-3 hits)
       [inputButtons.up, activeAttackButtons[0]], // up + attack
+      [inputButtons.down, activeAttackButtons[1]], // down + attack
+      [inputButtons.left, activeAttackButtons[0], activeAttackButtons[1]], // left + LP + MP
+      [inputButtons.right, activeAttackButtons[1], activeAttackButtons[0]], // right + MP + LP
+      
+      // Complex movement + attack combos (4-6 hits)
+      [inputButtons.up, activeAttackButtons[0], inputButtons.down, activeAttackButtons[1]], // up LP down MP
+      [inputButtons.left, activeAttackButtons[0], activeAttackButtons[1], inputButtons.right], // left LP MP right
+      [inputButtons.down, activeAttackButtons[0], activeAttackButtons[0], activeAttackButtons[1], inputButtons.up], // down LP LP MP up
+      [inputButtons.right, activeAttackButtons[1], inputButtons.left, activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0]], // right MP left LP MP LP
+      
+      // Mixed directional + attack combos (6+ hits)
+      [inputButtons.up, inputButtons.down, activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0], activeAttackButtons[1]], // up down LP MP LP MP
+      [inputButtons.left, inputButtons.right, inputButtons.left, activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0]], // left right left LP MP LP
+      [activeAttackButtons[0], inputButtons.up, activeAttackButtons[1], inputButtons.down, activeAttackButtons[0], inputButtons.left, activeAttackButtons[1]], // LP up MP down LP left MP
     ],
     'custom-combos': (() => {
       // Get custom combo from training store
@@ -334,11 +372,42 @@ const checkPartialComboValidity = (combo, trainingMode) => {
       [inputButtons.down, inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // D-QCF + LP
     ],
     combos: [
+      // Basic 2-hit combos
       [activeAttackButtons[0], activeAttackButtons[0]], // double attack
       [activeAttackButtons[0], activeAttackButtons[1]], // first + second
       [activeAttackButtons[1], activeAttackButtons[0]], // second + first
+      
+      // 3-hit combos
       [activeAttackButtons[0], activeAttackButtons[0], activeAttackButtons[0]], // triple first attack
+      [activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0]], // LP -> MP -> LP
+      [activeAttackButtons[1], activeAttackButtons[0], activeAttackButtons[1]], // MP -> LP -> MP
+      [activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[2] || activeAttackButtons[1]], // LP -> MP -> HP/MP
+      
+      // 4-hit combos
+      [activeAttackButtons[0], activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[1]], // LP LP MP MP
+      [activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0], activeAttackButtons[1]], // LP MP LP MP
+      [activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[2] || activeAttackButtons[1], activeAttackButtons[0]], // LP MP HP LP
+      
+      // 5-hit combos
+      [activeAttackButtons[0], activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[1], activeAttackButtons[0]], // LP LP MP MP LP
+      [activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0]], // LP MP LP MP LP
+      
+      // Movement + attack combos (2-3 hits)
       [inputButtons.up, activeAttackButtons[0]], // up + attack
+      [inputButtons.down, activeAttackButtons[1]], // down + attack
+      [inputButtons.left, activeAttackButtons[0], activeAttackButtons[1]], // left + LP + MP
+      [inputButtons.right, activeAttackButtons[1], activeAttackButtons[0]], // right + MP + LP
+      
+      // Complex movement + attack combos (4-6 hits)
+      [inputButtons.up, activeAttackButtons[0], inputButtons.down, activeAttackButtons[1]], // up LP down MP
+      [inputButtons.left, activeAttackButtons[0], activeAttackButtons[1], inputButtons.right], // left LP MP right
+      [inputButtons.down, activeAttackButtons[0], activeAttackButtons[0], activeAttackButtons[1], inputButtons.up], // down LP LP MP up
+      [inputButtons.right, activeAttackButtons[1], inputButtons.left, activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0]], // right MP left LP MP LP
+      
+      // Mixed directional + attack combos (6+ hits)
+      [inputButtons.up, inputButtons.down, activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0], activeAttackButtons[1]], // up down LP MP LP MP
+      [inputButtons.left, inputButtons.right, inputButtons.left, activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0]], // left right left LP MP LP
+      [activeAttackButtons[0], inputButtons.up, activeAttackButtons[1], inputButtons.down, activeAttackButtons[0], inputButtons.left, activeAttackButtons[1]], // LP up MP down LP left MP
     ],
     'custom-combos': (() => {
       // Get custom combo from training store

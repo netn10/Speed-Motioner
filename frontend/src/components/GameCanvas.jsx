@@ -171,8 +171,6 @@ const GameCanvas = () => {
       else if (input === 'lk') mappedInput = inputButtons.lk
       else if (input === 'mk') mappedInput = inputButtons.mk
       else if (input === 'hk') mappedInput = inputButtons.hk
-      else if (input === 'block') mappedInput = inputButtons.block
-      else if (input === 'special') mappedInput = inputButtons.special
       // Convert movement actions to key bindings too
       else if (input === 'up') mappedInput = inputButtons.up
       else if (input === 'down') mappedInput = inputButtons.down
@@ -187,9 +185,8 @@ const GameCanvas = () => {
       const kickKeys = attackButtonMode === 6
         ? [inputButtons.lk, inputButtons.mk, inputButtons.hk]
         : [inputButtons.lk, inputButtons.mk]
-      const otherKeys = [inputButtons.block, inputButtons.special]
 
-      const validInputs = [...movementKeys, ...punchKeys, ...kickKeys, ...otherKeys]
+      const validInputs = [...movementKeys, ...punchKeys, ...kickKeys]
 
       if (validInputs.includes(mappedInput)) {
         handleInputForTraining(mappedInput)

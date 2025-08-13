@@ -377,17 +377,44 @@ export const generateCustomTrainingPatterns = (inputButtons, activeAttackButtons
   // Combo training patterns
   if (customConfig.includeComboTraining) {
     patterns.push(
-      // Multi-attack combinations
+      // Basic 2-hit combos
       [activeAttackButtons[0], activeAttackButtons[0]], // double attack
       [activeAttackButtons[0], activeAttackButtons[1]], // first + second
       [activeAttackButtons[1], activeAttackButtons[0]], // second + first
-      [activeAttackButtons[0], activeAttackButtons[0], activeAttackButtons[0]], // triple first attack
       
-      // Movement + attack combinations
+      // 3-hit combos
+      [activeAttackButtons[0], activeAttackButtons[0], activeAttackButtons[0]], // triple first attack
+      [activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0]], // LP -> MP -> LP
+      [activeAttackButtons[1], activeAttackButtons[0], activeAttackButtons[1]], // MP -> LP -> MP
+      [activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[2] || activeAttackButtons[1]], // LP -> MP -> HP/MP
+      
+      // 4-hit combos
+      [activeAttackButtons[0], activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[1]], // LP LP MP MP
+      [activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0], activeAttackButtons[1]], // LP MP LP MP
+      [activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[2] || activeAttackButtons[1], activeAttackButtons[0]], // LP MP HP LP
+      
+      // 5-hit combos
+      [activeAttackButtons[0], activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[1], activeAttackButtons[0]], // LP LP MP MP LP
+      [activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0]], // LP MP LP MP LP
+      
+      // Movement + attack combos (2-3 hits)
       [inputButtons.up, activeAttackButtons[0]], // up + attack
       [inputButtons.down, activeAttackButtons[1]], // down + different attack
+      [inputButtons.left, activeAttackButtons[0], activeAttackButtons[1]], // left + LP + MP
+      [inputButtons.right, activeAttackButtons[1], activeAttackButtons[0]], // right + MP + LP
       
-      // More complex combinations
+      // Complex movement + attack combos (4-6 hits)
+      [inputButtons.up, activeAttackButtons[0], inputButtons.down, activeAttackButtons[1]], // up LP down MP
+      [inputButtons.left, activeAttackButtons[0], activeAttackButtons[1], inputButtons.right], // left LP MP right
+      [inputButtons.down, activeAttackButtons[0], activeAttackButtons[0], activeAttackButtons[1], inputButtons.up], // down LP LP MP up
+      [inputButtons.right, activeAttackButtons[1], inputButtons.left, activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0]], // right MP left LP MP LP
+      
+      // Mixed directional + attack combos (6+ hits)
+      [inputButtons.up, inputButtons.down, activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0], activeAttackButtons[1]], // up down LP MP LP MP
+      [inputButtons.left, inputButtons.right, inputButtons.left, activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0]], // left right left LP MP LP
+      [activeAttackButtons[0], inputButtons.up, activeAttackButtons[1], inputButtons.down, activeAttackButtons[0], inputButtons.left, activeAttackButtons[1]], // LP up MP down LP left MP
+      
+      // Pure directional combinations
       [inputButtons.up, inputButtons.down], // up + down
       [inputButtons.left, inputButtons.right], // left + right
       [inputButtons.up, activeAttackButtons[0], inputButtons.down] // up + attack + down
@@ -400,6 +427,170 @@ export const generateCustomTrainingPatterns = (inputButtons, activeAttackButtons
   }
   
   return patterns
+}
+
+// Filter training patterns based on difficulty level
+export const filterPatternsByDifficulty = (patterns, difficulty) => {
+  return patterns.filter(pattern => {
+    const length = pattern.length
+    
+    switch (difficulty.toLowerCase()) {
+      case 'easy':
+        return length === 1 // Only single inputs
+      case 'medium':
+        return length === 2 // Only 2-input patterns
+      case 'hard':
+        return length >= 3 && length <= 4 // 3-4 input patterns
+      default:
+        return true // Return all patterns if difficulty is unknown
+    }
+  })
+}
+
+// Generate difficulty-appropriate training patterns
+export const generateDifficultyBasedPatterns = (inputButtons, activeAttackButtons, mode, difficulty) => {
+  let allPatterns = []
+  
+  // Base patterns for different modes
+  switch (mode) {
+    case 'motion':
+      allPatterns = [
+        // Single movement inputs (Easy)
+        [inputButtons.up],
+        [inputButtons.down],
+        [inputButtons.left],
+        [inputButtons.right],
+        // Single attack inputs (Easy)
+        [activeAttackButtons[0]],
+        [activeAttackButtons[1]],
+        // 2-input movement + attack (Medium)
+        [inputButtons.up, activeAttackButtons[0]],
+        [inputButtons.down, activeAttackButtons[0]],
+        [inputButtons.left, activeAttackButtons[0]],
+        [inputButtons.right, activeAttackButtons[0]],
+        [inputButtons.up, activeAttackButtons[1]],
+        [inputButtons.down, activeAttackButtons[1]],
+        [inputButtons.left, activeAttackButtons[1]],
+        [inputButtons.right, activeAttackButtons[1]],
+        // 3-input motion patterns (Hard)
+        [inputButtons.down, inputButtons.right, activeAttackButtons[0]], // QCF + LP
+        [inputButtons.down, inputButtons.left, activeAttackButtons[0]], // QCB + LP
+        [inputButtons.left, inputButtons.right, activeAttackButtons[0]], // Charge B-F + LP
+        [inputButtons.down, inputButtons.up, activeAttackButtons[0]], // Charge D-U + LP
+        // 4-input motion patterns (Hard)
+        [inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // DP + LP
+        [inputButtons.left, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // HCF + LP (simplified)
+        [inputButtons.right, inputButtons.down, inputButtons.left, activeAttackButtons[0]], // HCB + LP (simplified)
+      ]
+      break
+
+    case 'motions':
+      allPatterns = [
+        // Single attack inputs (Easy - rare but possible for basic training)
+        [activeAttackButtons[0]],
+        [activeAttackButtons[1]],
+        // 2-input charge motions (Medium)
+        [inputButtons.left, inputButtons.right, activeAttackButtons[0]], // Charge B-F
+        [inputButtons.down, inputButtons.up, activeAttackButtons[0]], // Charge D-U
+        // 3-input quarter circles (Hard)
+        [inputButtons.down, inputButtons.right, activeAttackButtons[0]], // QCF + LP
+        [inputButtons.down, inputButtons.right, activeAttackButtons[1]], // QCF + MP
+        [inputButtons.down, inputButtons.left, activeAttackButtons[0]], // QCB + LP
+        [inputButtons.down, inputButtons.left, activeAttackButtons[1]], // QCB + MP
+        // 4-input complex motions (Hard)
+        [inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // DP + LP
+        [inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[1]], // DP + MP
+        [inputButtons.left, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // HCF + LP
+        [inputButtons.right, inputButtons.down, inputButtons.left, activeAttackButtons[0]], // HCB + LP
+      ]
+      break
+
+    case 'combos':
+      allPatterns = [
+        // Single attack inputs (Easy)
+        [activeAttackButtons[0]],
+        [activeAttackButtons[1]],
+        // 2-hit combos (Medium)
+        [activeAttackButtons[0], activeAttackButtons[0]], // double attack
+        [activeAttackButtons[0], activeAttackButtons[1]], // first + second
+        [activeAttackButtons[1], activeAttackButtons[0]], // second + first
+        [inputButtons.up, activeAttackButtons[0]], // up + attack
+        [inputButtons.down, activeAttackButtons[1]], // down + attack
+        [inputButtons.left, inputButtons.right], // left + right
+        [inputButtons.up, inputButtons.down], // up + down
+        // 3-hit combos (Hard)
+        [activeAttackButtons[0], activeAttackButtons[0], activeAttackButtons[0]], // triple attack
+        [activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0]], // LP -> MP -> LP
+        [activeAttackButtons[1], activeAttackButtons[0], activeAttackButtons[1]], // MP -> LP -> MP
+        [inputButtons.left, activeAttackButtons[0], activeAttackButtons[1]], // left + LP + MP
+        [inputButtons.right, activeAttackButtons[1], activeAttackButtons[0]], // right + MP + LP
+        [inputButtons.up, activeAttackButtons[0], inputButtons.down], // up + attack + down
+        // 4-hit combos (Hard)
+        [activeAttackButtons[0], activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[1]], // LP LP MP MP
+        [activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0], activeAttackButtons[1]], // LP MP LP MP
+        [inputButtons.up, activeAttackButtons[0], inputButtons.down, activeAttackButtons[1]], // up LP down MP
+        [inputButtons.left, activeAttackButtons[0], activeAttackButtons[1], inputButtons.right], // left LP MP right
+      ]
+      break
+
+    case 'custom':
+      allPatterns = [
+        // Single inputs (Easy)
+        [inputButtons.up],
+        [inputButtons.down],
+        [inputButtons.left],
+        [inputButtons.right],
+        [activeAttackButtons[0]],
+        [activeAttackButtons[1]],
+        // 2-input combinations (Medium)
+        [inputButtons.up, activeAttackButtons[0]],
+        [inputButtons.down, activeAttackButtons[0]],
+        [inputButtons.left, activeAttackButtons[0]],
+        [inputButtons.right, activeAttackButtons[0]],
+        [activeAttackButtons[0], activeAttackButtons[1]],
+        [inputButtons.up, inputButtons.down],
+        [inputButtons.left, inputButtons.right],
+        // 3-input combinations (Hard)
+        [inputButtons.down, inputButtons.right, activeAttackButtons[0]], // QCF + LP
+        [inputButtons.down, inputButtons.left, activeAttackButtons[0]], // QCB + LP
+        [inputButtons.up, activeAttackButtons[0], inputButtons.down],
+        [activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0]],
+        // 4-input combinations (Hard)
+        [inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // DP + LP
+        [activeAttackButtons[0], activeAttackButtons[1], activeAttackButtons[0], activeAttackButtons[1]],
+        [inputButtons.up, activeAttackButtons[0], inputButtons.down, activeAttackButtons[1]],
+        [inputButtons.left, activeAttackButtons[0], activeAttackButtons[1], inputButtons.right],
+      ]
+      break
+
+    default:
+      allPatterns = [
+        [inputButtons.up],
+        [inputButtons.down],
+        [inputButtons.left],
+        [inputButtons.right],
+        [activeAttackButtons[0]],
+        [activeAttackButtons[1]]
+      ]
+  }
+  
+  // Filter patterns based on difficulty
+  const filteredPatterns = filterPatternsByDifficulty(allPatterns, difficulty)
+  
+  // Ensure we always have at least a few patterns
+  if (filteredPatterns.length === 0) {
+    console.warn(`No patterns found for difficulty ${difficulty}, falling back to single inputs`)
+    return [
+      [inputButtons.up],
+      [inputButtons.down],
+      [inputButtons.left],
+      [inputButtons.right],
+      [activeAttackButtons[0]],
+      [activeAttackButtons[1]]
+    ]
+  }
+  
+  return filteredPatterns
 }
 
 export default {
@@ -415,5 +606,7 @@ export default {
   validateChargeMotion,
   generateMotionTrainingPatterns,
   generateCustomTrainingPatterns,
-  createMotionDisplay
+  createMotionDisplay,
+  filterPatternsByDifficulty,
+  generateDifficultyBasedPatterns
 }

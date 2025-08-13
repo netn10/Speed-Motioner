@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useTrainingStore } from '../stores/trainingStore'
 import { useSettingsStore } from '../stores/settingsStore'
+import { useGamepad } from '../hooks/useGamepad'
 import './CustomComboManager.css'
 
 const CustomComboManager = ({ onComboSelect, onClose }) => {
@@ -11,6 +12,7 @@ const CustomComboManager = ({ onComboSelect, onClose }) => {
     deleteCustomCombo 
   } = useTrainingStore()
   const { inputButtons } = useSettingsStore()
+  const { isConnected: gamepadConnected, setInputCallback } = useGamepad()
   
   const [combos, setCombos] = useState([])
   const [editingCombo, setEditingCombo] = useState(null)
@@ -23,6 +25,7 @@ const CustomComboManager = ({ onComboSelect, onClose }) => {
   const [currentInput, setCurrentInput] = useState('')
   const [isRecording, setIsRecording] = useState(false)
   const [recordedInputs, setRecordedInputs] = useState([])
+  const [previewInput, setPreviewInput] = useState('') // New state for immediate preview
 
   useEffect(() => {
     setCombos(getAllCustomCombos())
@@ -36,6 +39,54 @@ const CustomComboManager = ({ onComboSelect, onClose }) => {
       }
     }
   }, [isRecording, inputButtons])
+
+  // Handle gamepad inputs during recording
+  const handleGamepadInput = (input) => {
+    if (!isRecording) return
+    
+    // Convert action names to actual key bindings to match keyboard input
+    let mappedInput = input
+
+    // Convert action names to actual key bindings
+    if (input === 'lp') mappedInput = inputButtons.lp
+    else if (input === 'mp') mappedInput = inputButtons.mp
+    else if (input === 'hp') mappedInput = inputButtons.hp
+    else if (input === 'lk') mappedInput = inputButtons.lk
+    else if (input === 'mk') mappedInput = inputButtons.mk
+    else if (input === 'hk') mappedInput = inputButtons.hk
+    // Convert movement actions to key bindings too
+    else if (input === 'up') mappedInput = inputButtons.up
+    else if (input === 'down') mappedInput = inputButtons.down
+    else if (input === 'left') mappedInput = inputButtons.left
+    else if (input === 'right') mappedInput = inputButtons.right
+
+    // Add the input to the combo
+    setRecordedInputs(prev => [...prev, mappedInput])
+    setCurrentInput(mappedInput)
+    
+    // Immediately add to combo preview
+    setFormData(prev => ({
+      ...prev,
+      inputs: [...prev.inputs, mappedInput]
+    }))
+    
+    // Set immediate preview
+    setPreviewInput(mappedInput)
+    
+    // Clear preview after a short delay
+    setTimeout(() => {
+      setPreviewInput('')
+    }, 300)
+  }
+
+  // Set up gamepad input callback when recording starts/stops
+  useEffect(() => {
+    if (isRecording && gamepadConnected) {
+      setInputCallback(handleGamepadInput)
+    } else {
+      setInputCallback(null)
+    }
+  }, [isRecording, gamepadConnected, setInputCallback])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -51,23 +102,40 @@ const CustomComboManager = ({ onComboSelect, onClose }) => {
     e.preventDefault()
     const key = e.key.toLowerCase()
     
-    // Map common keys to input buttons
-    const keyMap = {
-      'w': inputButtons.up,
-      's': inputButtons.down,
-      'a': inputButtons.left,
-      'd': inputButtons.right,
-      'j': inputButtons.lp,
-      'k': inputButtons.mp,
-      'l': inputButtons.hp,
-      'u': inputButtons.lk,
-      'i': inputButtons.mk,
-      'o': inputButtons.hk
-    }
+    // Create reverse mapping from user's configured input buttons to keys
+    const reverseKeyMap = {}
     
-    if (keyMap[key]) {
-      setRecordedInputs(prev => [...prev, keyMap[key]])
-      setCurrentInput(keyMap[key])
+    // Map movement keys
+    Object.entries(inputButtons).forEach(([action, button]) => {
+      if (['up', 'down', 'left', 'right', 'lp', 'mp', 'hp', 'lk', 'mk', 'hk'].includes(action)) {
+        reverseKeyMap[button] = button
+      }
+    })
+    
+    // Also support arrow keys for movement (common alternative)
+    reverseKeyMap['arrowup'] = inputButtons.up
+    reverseKeyMap['arrowdown'] = inputButtons.down
+    reverseKeyMap['arrowleft'] = inputButtons.left
+    reverseKeyMap['arrowright'] = inputButtons.right
+    
+    if (reverseKeyMap[key]) {
+      const inputValue = reverseKeyMap[key]
+      setRecordedInputs(prev => [...prev, inputValue])
+      setCurrentInput(inputValue)
+      
+      // Immediately add to combo preview
+      setFormData(prev => ({
+        ...prev,
+        inputs: [...prev.inputs, inputValue]
+      }))
+      
+      // Set immediate preview
+      setPreviewInput(inputValue)
+      
+      // Clear preview after a short delay
+      setTimeout(() => {
+        setPreviewInput('')
+      }, 300)
     }
   }
 
@@ -75,14 +143,18 @@ const CustomComboManager = ({ onComboSelect, onClose }) => {
     setIsRecording(true)
     setRecordedInputs([])
     setCurrentInput('')
+    setPreviewInput('')
+    // Clear existing inputs when starting new recording
+    setFormData(prev => ({
+      ...prev,
+      inputs: []
+    }))
   }
 
   const stopRecording = () => {
     setIsRecording(false)
-    setFormData(prev => ({
-      ...prev,
-      inputs: recordedInputs
-    }))
+    // Inputs are already added to formData during recording, so no need to set them again
+    setPreviewInput('')
   }
 
   const addInput = (input) => {
@@ -164,11 +236,32 @@ const CustomComboManager = ({ onComboSelect, onClose }) => {
     }
   }
 
+  const getInputDisplay = (input) => {
+    // Input key mappings for display
+    const inputLabels = {
+      [inputButtons.up]: '↑',
+      [inputButtons.left]: '←',
+      [inputButtons.down]: '↓',
+      [inputButtons.right]: '→',
+      [inputButtons.lp]: 'LP',
+      [inputButtons.mp]: 'MP',
+      [inputButtons.hp]: 'HP',
+      [inputButtons.lk]: 'LK',
+      [inputButtons.mk]: 'MK',
+      [inputButtons.hk]: 'HK',
+      // Arrow key mappings
+      arrowup: '↑',
+      arrowleft: '←',
+      arrowdown: '↓',
+      arrowright: '→'
+    }
+    
+    return inputLabels[input] || input.toUpperCase()
+  }
+
   const formatInputs = (inputs) => {
     return inputs.map(input => {
-      // Find the key name for the input
-      const keyName = Object.keys(inputButtons).find(key => inputButtons[key] === input)
-      return keyName ? keyName.toUpperCase() : input
+      return getInputDisplay(input)
     }).join(' → ')
   }
 
@@ -245,8 +338,8 @@ const CustomComboManager = ({ onComboSelect, onClose }) => {
                 </button>
                 <span className="recording-hint">
                   {isRecording 
-                    ? 'Press keys (WASD for movement, JKL for punches, UIO for kicks)' 
-                    : 'Click to start recording inputs'
+                    ? `Press keys (${inputButtons.up.toUpperCase()}/${inputButtons.down.toUpperCase()}/${inputButtons.left.toUpperCase()}/${inputButtons.right.toUpperCase()}/Arrow keys for movement, ${inputButtons.lp.toUpperCase()}/${inputButtons.mp.toUpperCase()}/${inputButtons.hp.toUpperCase()} for punches, ${inputButtons.lk.toUpperCase()}/${inputButtons.mk.toUpperCase()}/${inputButtons.hk.toUpperCase()} for kicks)${gamepadConnected ? ' or use gamepad' : ''}` 
+                    : `Click to start recording inputs${gamepadConnected ? ' (keyboard or gamepad supported)' : ''}`
                   }
                 </span>
               </div>
@@ -254,7 +347,8 @@ const CustomComboManager = ({ onComboSelect, onClose }) => {
               {isRecording && (
                 <div className="recording-status">
                   <span>Recording...</span>
-                  {currentInput && <span className="current-input">Current: {currentInput}</span>}
+                  {currentInput && <span className="current-input">Current: {getInputDisplay(currentInput)}</span>}
+                  {gamepadConnected && <span className="gamepad-indicator">🎮 Gamepad Active</span>}
                 </div>
               )}
             </div>
@@ -276,12 +370,15 @@ const CustomComboManager = ({ onComboSelect, onClose }) => {
             </div>
 
             <div className="combo-preview">
-              <h4>Combo Preview:</h4>
-              <div className="inputs-display">
+              <h4>
+                Combo Preview:
+                {isRecording && <span className="recording-indicator"> 🎙️ Recording...</span>}
+              </h4>
+              <div className={`inputs-display ${isRecording ? 'recording-active' : ''}`}>
                 {formData.inputs.length > 0 ? (
                   formData.inputs.map((input, index) => (
                     <div key={index} className="input-item">
-                      <span className="input-value">{input}</span>
+                      <span className="input-value">{getInputDisplay(input)}</span>
                       <button
                         type="button"
                         className="remove-input"

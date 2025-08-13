@@ -10,11 +10,13 @@ const Settings = () => {
     theme,
     toggleTheme,
     attackButtonMode,
+    attackDisplayMode,
     inputButtons,
     gamepadButtons,
     setInputButton,
     setGamepadButton,
     setAttackButtonMode,
+    setAttackDisplayMode,
     availableButtons,
     resetToDefaults
   } = useSettingsStore()
@@ -53,21 +55,40 @@ const Settings = () => {
     { key: 'right', label: 'Right', icon: '→' }
   ]
 
-  const punchActions = [
-    { key: 'lp', label: 'Light Punch', icon: '👊' },
-    { key: 'mp', label: 'Medium Punch', icon: '👊' },
-    { key: 'hp', label: 'Heavy Punch', icon: '👊' }
-  ]
+  const getPunchActions = () => {
+    const actions = [
+      { key: 'lp', label: 'Light Punch', icon: '✊', text: 'LP', color: '#3498db' },
+      { key: 'mp', label: 'Medium Punch', icon: '✊', text: 'MP', color: '#f39c12' },
+      { key: 'hp', label: 'Heavy Punch', icon: '✊', text: 'HP', color: '#e74c3c' }
+    ]
+    return actions.map(action => ({
+      ...action,
+      displayIcon: attackDisplayMode === 'icons' ? action.icon : action.text
+    }))
+  }
 
-  const kickActions = [
-    { key: 'lk', label: 'Light Kick', icon: '🦵' },
-    { key: 'mk', label: 'Medium Kick', icon: '🦵' },
-    { key: 'hk', label: 'Heavy Kick', icon: '🦵' }
-  ]
+  const getKickActions = () => {
+    const actions = [
+      { key: 'lk', label: 'Light Kick', icon: '🦵', text: 'LK', color: '#3498db' },
+      { key: 'mk', label: 'Medium Kick', icon: '🦵', text: 'MK', color: '#f39c12' },
+      { key: 'hk', label: 'Heavy Kick', icon: '🦵', text: 'HK', color: '#e74c3c' }
+    ]
+    return actions.map(action => ({
+      ...action,
+      displayIcon: attackDisplayMode === 'icons' ? action.icon : action.text
+    }))
+  }
 
   // Filter actions based on attack button mode
-  const getPunchActions = () => attackButtonMode === 6 ? punchActions : punchActions.slice(0, 2)
-  const getKickActions = () => attackButtonMode === 6 ? kickActions : kickActions.slice(0, 2)
+  const getFilteredPunchActions = () => {
+    const actions = getPunchActions()
+    return attackButtonMode === 6 ? actions : actions.slice(0, 2)
+  }
+  
+  const getFilteredKickActions = () => {
+    const actions = getKickActions()
+    return attackButtonMode === 6 ? actions : actions.slice(0, 2)
+  }
 
   const handleButtonClick = (action) => {
     setEditingButton(action)
@@ -231,6 +252,23 @@ const Settings = () => {
               </p>
             </div>
 
+            <div className="settings-section">
+              <h3>Attack Display Mode</h3>
+              <div className="attack-mode-toggle">
+                <span className="mode-label">Text</span>
+                <button
+                  className={`toggle-switch ${attackDisplayMode === 'icons' ? 'active' : ''}`}
+                  onClick={() => setAttackDisplayMode(attackDisplayMode === 'text' ? 'icons' : 'text')}
+                >
+                  <div className="toggle-slider"></div>
+                </button>
+                <span className="mode-label">Icons</span>
+              </div>
+              <p className="section-description">
+                Choose between text labels (LP, MP, HP, LK, MK, HK) or Street Fighter-style icons (✊, 🦵) with colored backgrounds
+              </p>
+            </div>
+
 
 
             <div className="settings-actions">
@@ -274,7 +312,7 @@ const Settings = () => {
                   {gamepadConnected ? (
                     <div className="gamepad-status-settings">
                       <span className="gamepad-indicator">🎮 Gamepad Connected</span>
-                      <span className="gamepad-info">Use joystick for movement and face buttons for attacks</span>
+                      <span className="gamepad-info">You may use the joystick for movement and face buttons for attacks at the Gamepad Controls tab</span>
                     </div>
                   ) : (
                     <div className="gamepad-status-settings disconnected">
@@ -304,10 +342,18 @@ const Settings = () => {
                 <div className="settings-section">
                   <h3>Punch Controls</h3>
                   <div className="input-buttons-grid">
-                    {getPunchActions().map(action => (
+                    {getFilteredPunchActions().map(action => (
                       <div key={action.key} className="input-button-item">
                         <div className="input-label">
-                          <span className="input-icon">{action.icon}</span>
+                          <span className="input-icon" style={{ 
+                            backgroundColor: attackDisplayMode === 'icons' ? action.color : 'transparent', 
+                            color: attackDisplayMode === 'icons' ? 'white' : 'inherit',
+                            padding: attackDisplayMode === 'icons' ? '4px 8px' : '0',
+                            borderRadius: attackDisplayMode === 'icons' ? '4px' : '0',
+                            display: 'inline-block',
+                            minWidth: attackDisplayMode === 'icons' ? '24px' : 'auto',
+                            textAlign: 'center'
+                          }}>{action.displayIcon}</span>
                           <span>{action.label}</span>
                         </div>
                         <button
@@ -324,10 +370,18 @@ const Settings = () => {
                 <div className="settings-section">
                   <h3>Kick Controls</h3>
                   <div className="input-buttons-grid">
-                    {getKickActions().map(action => (
+                    {getFilteredKickActions().map(action => (
                       <div key={action.key} className="input-button-item">
                         <div className="input-label">
-                          <span className="input-icon">{action.icon}</span>
+                          <span className="input-icon" style={{ 
+                            backgroundColor: attackDisplayMode === 'icons' ? action.color : 'transparent', 
+                            color: attackDisplayMode === 'icons' ? 'white' : 'inherit',
+                            padding: attackDisplayMode === 'icons' ? '4px 8px' : '0',
+                            borderRadius: attackDisplayMode === 'icons' ? '4px' : '0',
+                            display: 'inline-block',
+                            minWidth: attackDisplayMode === 'icons' ? '24px' : 'auto',
+                            textAlign: 'center'
+                          }}>{action.displayIcon}</span>
                           <span>{action.label}</span>
                         </div>
                         <button
@@ -390,7 +444,7 @@ const Settings = () => {
 
                   <div className="gamepad-action-mappings">
                     <h4>Movement Controls</h4>
-                    <div className="gamepad-mapping-grid">
+                    <div className="input-buttons-grid">
                       {movementActions.map(action => {
                         // Find which gamepad button is assigned to this action
                         const assignedButton = Object.entries(gamepadButtons || {}).find(([buttonIndex, buttonAction]) =>
@@ -400,13 +454,13 @@ const Settings = () => {
                         const buttonName = buttonIndex ? `Button ${buttonIndex}` : 'Not Assigned'
 
                         return (
-                          <div key={action.key} className="gamepad-mapping-item">
-                            <div className="gamepad-button-info">
-                              <span className="gamepad-button-label">{action.icon} {action.label}</span>
-                              <span className="gamepad-button-assigned">Assigned to: {buttonName}</span>
+                          <div key={action.key} className="input-button-item">
+                            <div className="input-label">
+                              <span className="input-icon">{action.icon}</span>
+                              <span>{action.label}</span>
                             </div>
                             <button
-                              className={`gamepad-mapping-button ${editingGamepadAction === action.key ? 'editing' : ''}`}
+                              className={`input-button ${editingGamepadAction === action.key ? 'editing' : ''}`}
                               onClick={() => handleGamepadActionClick(action.key)}
                             >
                               {buttonIndex || 'CLICK'}
@@ -417,8 +471,8 @@ const Settings = () => {
                     </div>
 
                     <h4>Punch Controls</h4>
-                    <div className="gamepad-mapping-grid">
-                      {getPunchActions().map(action => {
+                    <div className="input-buttons-grid">
+                      {getFilteredPunchActions().map(action => {
                         const assignedButton = Object.entries(gamepadButtons || {}).find(([buttonIndex, buttonAction]) =>
                           buttonAction === action.key
                         )
@@ -426,13 +480,21 @@ const Settings = () => {
                         const buttonName = buttonIndex ? `Button ${buttonIndex}` : 'Not Assigned'
 
                         return (
-                          <div key={action.key} className="gamepad-mapping-item">
-                            <div className="gamepad-button-info">
-                              <span className="gamepad-button-label">{action.icon} {action.label}</span>
-                              <span className="gamepad-button-assigned">Assigned to: {buttonName}</span>
+                          <div key={action.key} className="input-button-item">
+                            <div className="input-label">
+                              <span className="input-icon" style={{ 
+                                backgroundColor: attackDisplayMode === 'icons' ? action.color : 'transparent', 
+                                color: attackDisplayMode === 'icons' ? 'white' : 'inherit',
+                                padding: attackDisplayMode === 'icons' ? '4px 8px' : '0',
+                                borderRadius: attackDisplayMode === 'icons' ? '4px' : '0',
+                                display: 'inline-block',
+                                minWidth: attackDisplayMode === 'icons' ? '24px' : 'auto',
+                                textAlign: 'center'
+                              }}>{action.displayIcon}</span>
+                              <span>{action.label}</span>
                             </div>
                             <button
-                              className={`gamepad-mapping-button ${editingGamepadAction === action.key ? 'editing' : ''}`}
+                              className={`input-button ${editingGamepadAction === action.key ? 'editing' : ''}`}
                               onClick={() => handleGamepadActionClick(action.key)}
                             >
                               {buttonIndex || 'CLICK'}
@@ -443,8 +505,8 @@ const Settings = () => {
                     </div>
 
                     <h4>Kick Controls</h4>
-                    <div className="gamepad-mapping-grid">
-                      {getKickActions().map(action => {
+                    <div className="input-buttons-grid">
+                      {getFilteredKickActions().map(action => {
                         const assignedButton = Object.entries(gamepadButtons || {}).find(([buttonIndex, buttonAction]) =>
                           buttonAction === action.key
                         )
@@ -452,13 +514,21 @@ const Settings = () => {
                         const buttonName = buttonIndex ? `Button ${buttonIndex}` : 'Not Assigned'
 
                         return (
-                          <div key={action.key} className="gamepad-mapping-item">
-                            <div className="gamepad-button-info">
-                              <span className="gamepad-button-label">{action.icon} {action.label}</span>
-                              <span className="gamepad-button-assigned">Assigned to: {buttonName}</span>
+                          <div key={action.key} className="input-button-item">
+                            <div className="input-label">
+                              <span className="input-icon" style={{ 
+                                backgroundColor: attackDisplayMode === 'icons' ? action.color : 'transparent', 
+                                color: attackDisplayMode === 'icons' ? 'white' : 'inherit',
+                                padding: attackDisplayMode === 'icons' ? '4px 8px' : '0',
+                                borderRadius: attackDisplayMode === 'icons' ? '4px' : '0',
+                                display: 'inline-block',
+                                minWidth: attackDisplayMode === 'icons' ? '24px' : 'auto',
+                                textAlign: 'center'
+                              }}>{action.displayIcon}</span>
+                              <span>{action.label}</span>
                             </div>
                             <button
-                              className={`gamepad-mapping-button ${editingGamepadAction === action.key ? 'editing' : ''}`}
+                              className={`input-button ${editingGamepadAction === action.key ? 'editing' : ''}`}
                               onClick={() => handleGamepadActionClick(action.key)}
                             >
                               {buttonIndex || 'CLICK'}
@@ -468,34 +538,7 @@ const Settings = () => {
                       })}
                     </div>
 
-                    <h4>Other Controls</h4>
-                    <div className="gamepad-mapping-grid">
-                      {[
-                        { key: 'block', label: 'Block', icon: '🛡️' },
-                        { key: 'special', label: 'Special', icon: '⚡' }
-                      ].map(action => {
-                        const assignedButton = Object.entries(gamepadButtons || {}).find(([buttonIndex, buttonAction]) =>
-                          buttonAction === action.key
-                        )
-                        const buttonIndex = assignedButton ? assignedButton[0] : null
-                        const buttonName = buttonIndex ? `Button ${buttonIndex}` : 'Not Assigned'
 
-                        return (
-                          <div key={action.key} className="gamepad-mapping-item">
-                            <div className="gamepad-button-info">
-                              <span className="gamepad-button-label">{action.icon} {action.label}</span>
-                              <span className="gamepad-button-assigned">Assigned to: {buttonName}</span>
-                            </div>
-                            <button
-                              className={`gamepad-mapping-button ${editingGamepadAction === action.key ? 'editing' : ''}`}
-                              onClick={() => handleGamepadActionClick(action.key)}
-                            >
-                              {buttonIndex || 'CLICK'}
-                            </button>
-                          </div>
-                        )
-                      })}
-                    </div>
                   </div>
 
                   {waitingForGamepadInput && (
@@ -519,7 +562,7 @@ const Settings = () => {
               <div className="gamepad-test-section">
                 <div className="settings-section">
                   <h3>Gamepad Connection Status</h3>
-                  {gamepadConnected ? (
+                  {gamepadConnected && (
                     <div className="gamepad-status connected">
                       <div className="status-indicator">
                         <span className="status-dot connected"></span>
@@ -533,16 +576,6 @@ const Settings = () => {
                           <p><strong>Axes:</strong> {gamepad.axes.length}</p>
                         </div>
                       ))}
-                    </div>
-                  ) : (
-                    <div className="gamepad-status disconnected">
-                      <div className="status-indicator">
-                        <span className="status-dot disconnected"></span>
-                        <span className="status-text">No Gamepad Detected</span>
-                      </div>
-                      <p className="connection-help">
-                        Connect a gamepad and press any button to activate it.
-                      </p>
                     </div>
                   )}
                 </div>

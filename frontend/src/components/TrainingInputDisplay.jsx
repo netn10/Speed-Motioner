@@ -3,6 +3,7 @@ import { useGameStore } from '../stores/gameStore'
 import { useTrainingStore } from '../stores/trainingStore'
 import { useInputButtons } from '../hooks/useInputButtons'
 import { useSettingsStore } from '../stores/settingsStore'
+import { generateDifficultyBasedPatterns } from '../utils/motionInputs'
 import './TrainingInputDisplay.css'
 
 const TrainingInputDisplay = () => {
@@ -10,7 +11,7 @@ const TrainingInputDisplay = () => {
   const trainingMode = currentSession?.mode || 'motion'
   const difficulty = currentSession?.difficulty || 'medium'
   const inputButtons = useInputButtons()
-  const { attackButtonMode, theme } = useSettingsStore()
+  const { attackButtonMode, attackDisplayMode, theme } = useSettingsStore()
   const [currentInput, setCurrentInput] = useState([])
   const [inputIndex, setInputIndex] = useState(0)
   const [timeRemaining, setTimeRemaining] = useState(0)
@@ -29,6 +30,7 @@ const TrainingInputDisplay = () => {
   const timeoutTriggeredRef = useRef(false)
   const startNewInputCallCount = useRef(0)
   const timeoutCount = useRef(0)
+  const handlingWrongInputRef = useRef(false) // Flag to prevent timeout during wrong input handling
 
   // Reset countdown when session changes
   useEffect(() => {
@@ -100,83 +102,26 @@ const TrainingInputDisplay = () => {
   // Memoize inputButtons to prevent unnecessary useEffect re-runs
   const stableInputButtons = useMemo(() => inputButtons, [inputButtons])
 
-  // Training patterns based on the backend
-  const trainingPatterns = {
-    motion: [
-      // Single movement inputs
-      [inputButtons.up], // up
-      [inputButtons.down], // down
-      [inputButtons.left], // left
-      [inputButtons.right], // right
-      // Single attack inputs
-      [activeAttackButtons[0]], // first attack
-      [activeAttackButtons[1]], // second attack
-    ],
-    motions: [
-      // Quarter-Circle Forward (QCF) - 236 + attack
-      [inputButtons.down, inputButtons.right, activeAttackButtons[0]], // QCF + LP
-      [inputButtons.down, inputButtons.right, activeAttackButtons[1]], // QCF + MP
-      
-      // Quarter-Circle Back (QCB) - 214 + attack  
-      [inputButtons.down, inputButtons.left, activeAttackButtons[0]], // QCB + LP
-      [inputButtons.down, inputButtons.left, activeAttackButtons[1]], // QCB + MP
-      
-      // Dragon Punch (DP) - 623 + attack
-      [inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // DP + LP
-      [inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[1]], // DP + MP
-      
-      // Half-Circle Forward (HCF) - 41236 + attack
-      [inputButtons.left, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // HCF + LP (simplified)
-      
-      // Half-Circle Back (HCB) - 63214 + attack
-      [inputButtons.right, inputButtons.down, inputButtons.left, activeAttackButtons[0]], // HCB + LP (simplified)
-      
-      // Charge Back-Forward (simplified for training)
-      [inputButtons.left, inputButtons.right, activeAttackButtons[0]], // Charge B-F + LP
-      
-      // Charge Down-Up (simplified for training)  
-      [inputButtons.down, inputButtons.up, activeAttackButtons[0]], // Charge D-U + LP
-      
-      // Double Quarter-Circle Forward - 236236 + attack
-      [inputButtons.down, inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // D-QCF + LP
-    ],
-    combos: [
-      [activeAttackButtons[0], activeAttackButtons[0]], // double attack
-      [activeAttackButtons[0], activeAttackButtons[1]], // first + second
-      [activeAttackButtons[1], activeAttackButtons[0]], // second + first
-      [activeAttackButtons[0], activeAttackButtons[0], activeAttackButtons[0]], // triple first attack
-      [inputButtons.up, activeAttackButtons[0]], // up + attack
-    ],
-    'custom-combos': (() => {
-      // Get custom combo from session config
+  // Generate training patterns based on difficulty
+  const trainingPatterns = useMemo(() => {
+    const patterns = {}
+    
+    // Generate patterns for each training mode using difficulty-based filtering
+    const modes = ['motion', 'motions', 'combos', 'custom']
+    modes.forEach(mode => {
+      patterns[mode] = generateDifficultyBasedPatterns(inputButtons, activeAttackButtons, mode, difficulty)
+    })
+    
+    // Handle custom-combos separately since it uses specific custom combo data
+    patterns['custom-combos'] = (() => {
       if (currentSession?.customConfig?.customCombo) {
         return [currentSession.customConfig.customCombo.inputs]
       }
       return []
-    })(),
-    custom: [
-      // Mixed patterns for custom challenge
-      [inputButtons.up], // up
-      [inputButtons.down], // down
-      [inputButtons.left], // left
-      [inputButtons.right], // right
-      [activeAttackButtons[0]], // first attack
-      [activeAttackButtons[1]], // second attack
-      [inputButtons.up, activeAttackButtons[0]], // up + attack
-      [inputButtons.down, activeAttackButtons[0]], // down + attack
-      [inputButtons.left, activeAttackButtons[0]], // left + attack
-      [inputButtons.right, activeAttackButtons[0]], // right + attack
-      [activeAttackButtons[0], activeAttackButtons[0]], // double attack
-      [activeAttackButtons[0], activeAttackButtons[1]], // attack + attack
-      [inputButtons.up, inputButtons.down], // up + down
-      [inputButtons.left, inputButtons.right], // left + right
-      [inputButtons.up, activeAttackButtons[0], inputButtons.down], // up + attack + down
-      // Add some motion inputs to custom mode too
-      [inputButtons.down, inputButtons.right, activeAttackButtons[0]], // QCF + LP
-      [inputButtons.down, inputButtons.left, activeAttackButtons[0]], // QCB + LP
-      [inputButtons.right, inputButtons.down, inputButtons.right, activeAttackButtons[0]], // DP + LP
-    ]
-  }
+    })()
+    
+    return patterns
+  }, [inputButtons, activeAttackButtons, difficulty, currentSession?.customConfig?.customCombo])
 
   // Input key mappings for display
   const inputLabels = {
@@ -184,13 +129,13 @@ const TrainingInputDisplay = () => {
     [inputButtons.left]: '←',
     [inputButtons.down]: '↓',
     [inputButtons.right]: '→',
-    [inputButtons.lp]: 'LP',
-    [inputButtons.mp]: 'MP',
-    [inputButtons.hp]: 'HP',
-    [inputButtons.lk]: 'LK',
-    [inputButtons.mk]: 'MK',
-    [inputButtons.hk]: 'HK',
-    [inputButtons.block]: 'Block',
+    // Attack buttons - use icons or text based on display mode
+    [inputButtons.lp]: attackDisplayMode === 'icons' ? '✊' : 'LP',
+    [inputButtons.mp]: attackDisplayMode === 'icons' ? '✊' : 'MP',
+    [inputButtons.hp]: attackDisplayMode === 'icons' ? '✊' : 'HP',
+    [inputButtons.lk]: attackDisplayMode === 'icons' ? '🦵' : 'LK',
+    [inputButtons.mk]: attackDisplayMode === 'icons' ? '🦵' : 'MK',
+    [inputButtons.hk]: attackDisplayMode === 'icons' ? '🦵' : 'HK',
     // Arrow key mappings
     arrowup: '↑',
     arrowleft: '←',
@@ -198,7 +143,7 @@ const TrainingInputDisplay = () => {
     arrowright: '→'
   }
 
-  const { inputs } = useGameStore()
+  const { inputs, clearInputs } = useGameStore()
 
   // Start new input sequence
   const startNewInput = () => {
@@ -227,6 +172,7 @@ const TrainingInputDisplay = () => {
     setPointsEarned(0)
     processingSuccessRef.current = false  // Reset processing flag for new input
     timeoutTriggeredRef.current = false  // Reset timeout flag for new input
+    handlingWrongInputRef.current = false  // Reset wrong input flag for new input
 
     // Start timer
     const timing = getDifficultyTiming()
@@ -361,12 +307,17 @@ const TrainingInputDisplay = () => {
     console.log('🕐 Timeout triggered!', { timeoutCount: timeoutCount.current })
     timeoutCount.current += 1
 
-    if (isCompleted) {
-      console.log('❌ Timeout ignored - already completed')
+    if (isCompleted || handlingWrongInputRef.current) {
+      console.log('❌ Timeout ignored - already completed or handling wrong input')
       return
     }
     setIsCompleted(true)
     setShowFeedback('fail')
+
+    // Clear all player inputs when timer runs out
+    clearInputs()
+    // Reset the input start count to match the cleared inputs array
+    inputStartCountRef.current = 0
 
     // Update score for failed attempt - get current score from store to ensure we have the latest
     const { currentSession: latestSession } = useTrainingStore.getState()
@@ -428,10 +379,16 @@ const TrainingInputDisplay = () => {
 
     // If this is a new input that doesn't match what we expect, increment progress by 1
     if (lastInput !== expectedFirstInput && inputIndex === 0) {
+      // Set flag to prevent timeout from triggering
+      handlingWrongInputRef.current = true
+      
       // Show wrong input feedback
       setShowFeedback('wrong')
 
-      // Reset timer for wrong input
+      // Mark as completed to prevent timeout from triggering
+      setIsCompleted(true)
+
+      // Clear all timers
       if (timerRef.current) {
         clearInterval(timerRef.current)
         timerRef.current = null
@@ -441,46 +398,31 @@ const TrainingInputDisplay = () => {
         timeoutRef.current = null
       }
 
-      // Reset timer to full duration
-      const timing = getDifficultyTiming()
-      setTimeRemaining(timing)
-      inputStartTimeRef.current = Date.now()
-
-      // Start new timer
-      timerRef.current = setInterval(() => {
-        setTimeRemaining(prev => {
-          const newTime = prev - 100
-          
-          if (newTime <= 100) {
-            // Time's up - mark as failed
-            if (timerRef.current) {
-              clearInterval(timerRef.current)
-              timerRef.current = null
-            }
-            // Use timeoutRef to ensure this only runs once
-            if (!timeoutRef.current) {
-              timeoutRef.current = setTimeout(() => {
-                handleInputTimeout()
-                timeoutRef.current = null
-              }, 0)
-            }
-            return 0
-          }
-          return newTime
-        })
-      }, 100)
-
-      // Don't update progress for wrong inputs - progress should only be made on completion or timeout
-      // This ensures progress is only made when user finishes all their input or when time is up
-      console.log('❌ Wrong input (no progress):', {
+      // Update progress for wrong inputs - increment totalInputs by 1
+      const { currentSession: latestSession } = useTrainingStore.getState()
+      const currentScore = latestSession?.score || { totalInputs: 0, correctInputs: 0, accuracy: 0, points: 0 }
+      
+      const newScore = {
+        totalInputs: currentScore.totalInputs + 1,
+        correctInputs: currentScore.correctInputs, // Don't increment correct inputs for wrong inputs
+        points: currentScore.points || 0, // No points for wrong inputs
+        accuracy: (currentScore.correctInputs / (currentScore.totalInputs + 1)) * 100
+      }
+      
+      updateSessionScore(newScore)
+      
+      console.log('❌ Wrong input (progress +1):', {
         expected: expectedFirstInput,
         actual: lastInput,
-        inputStartCount: inputStartCountRef.current
+        inputStartCount: inputStartCountRef.current,
+        newTotalInputs: newScore.totalInputs
       })
 
-      // Clear wrong input feedback after a short delay
+      // Clear wrong input feedback and start new input after a short delay
       setTimeout(() => {
         setShowFeedback(null)
+        // Start a completely new input sequence
+        startNewInput()
       }, 1000)
     }
   }, [inputs, currentInput, isCompleted, inputIndex])
@@ -648,14 +590,29 @@ const TrainingInputDisplay = () => {
           </div>
         )}
         <div className="input-sequence">
-          {currentInput.map((input, index) => (
-            <span
-              key={index}
-              className={`input-key ${index < inputIndex ? 'completed' : ''}`}
-            >
-              {getInputDisplay(input)}
-            </span>
-          ))}
+          {currentInput.map((input, index) => {
+            const isAttackButton = [inputButtons.lp, inputButtons.mp, inputButtons.hp, inputButtons.lk, inputButtons.mk, inputButtons.hk].includes(input)
+            const getAttackColor = (input) => {
+              if (input === inputButtons.lp || input === inputButtons.lk) return '#3498db' // Light - blue
+              if (input === inputButtons.mp || input === inputButtons.mk) return '#f39c12' // Medium - yellow
+              if (input === inputButtons.hp || input === inputButtons.hk) return '#e74c3c' // Heavy - red
+              return null
+            }
+            
+            return (
+              <span
+                key={index}
+                className={`input-key ${index < inputIndex ? 'completed' : ''}`}
+                style={{
+                  backgroundColor: attackDisplayMode === 'icons' && isAttackButton ? getAttackColor(input) : undefined,
+                  color: attackDisplayMode === 'icons' && isAttackButton ? 'white' : undefined,
+                  borderColor: attackDisplayMode === 'icons' && isAttackButton ? getAttackColor(input) : undefined
+                }}
+              >
+                {getInputDisplay(input)}
+              </span>
+            )
+          })}
         </div>
       </div>
 
