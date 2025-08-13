@@ -199,7 +199,6 @@ const TrainingInputDisplay = () => {
         const newTime = prev - 100
         
         if (newTime <= 100) {
-          console.log('⏰ Timer reached zero! Triggering timeout...')
           // Time's up - mark as failed
           if (timerRef.current) {
             clearInterval(timerRef.current)
@@ -207,14 +206,11 @@ const TrainingInputDisplay = () => {
           }
           // Use timeoutRef to ensure this only runs once
           if (!timeoutRef.current) {
-            console.log('🔄 Setting up timeout callback...')
             timeoutRef.current = setTimeout(() => {
-              console.log('🚀 Calling handleInputTimeout...')
               handleInputTimeout()
               timeoutRef.current = null
             }, 0)
           } else {
-            console.log('⚠️ Timeout already scheduled, skipping...')
           }
           return 0
         }
@@ -304,11 +300,9 @@ const TrainingInputDisplay = () => {
 
   // Handle input timeout
   const handleInputTimeout = () => {
-    console.log('🕐 Timeout triggered!', { timeoutCount: timeoutCount.current })
     timeoutCount.current += 1
 
     if (isCompleted || handlingWrongInputRef.current) {
-      console.log('❌ Timeout ignored - already completed or handling wrong input')
       return
     }
     setIsCompleted(true)
@@ -322,7 +316,6 @@ const TrainingInputDisplay = () => {
     // Update score for failed attempt - get current score from store to ensure we have the latest
     const { currentSession: latestSession } = useTrainingStore.getState()
     const currentScore = latestSession?.score || { totalInputs: 0, correctInputs: 0, accuracy: 0, points: 0 }
-    console.log('📊 Before timeout update:', currentScore)
     
     const newScore = {
       totalInputs: currentScore.totalInputs + 1,
@@ -331,7 +324,6 @@ const TrainingInputDisplay = () => {
       accuracy: (currentScore.correctInputs / (currentScore.totalInputs + 1)) * 100
     }
     
-    console.log('📊 After timeout update:', newScore)
     updateSessionScore(newScore)
 
     // Start new input after delay

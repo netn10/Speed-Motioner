@@ -20,6 +20,7 @@
     "test:backend": "cd backend && npm test",
     "lint": "cd frontend && npm run lint",
     "deploy": "powershell -ExecutionPolicy Bypass -File deploy.ps1",
+    "deploy:retry": "powershell -ExecutionPolicy Bypass -File deploy-with-retry.ps1",
     "deploy:github": "git add . && git commit -m \"Auto-deploy: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')\" && git push origin main",
     "deploy:heroku": "git push heroku main",
     "deploy:full": "npm run build && npm run deploy:github && npm run deploy:heroku",

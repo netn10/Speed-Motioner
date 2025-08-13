@@ -490,8 +490,12 @@ export const generateDifficultyBasedPatterns = (inputButtons, activeAttackButton
         [activeAttackButtons[0]],
         [activeAttackButtons[1]],
         // 2-input charge motions (Medium)
-        [inputButtons.left, inputButtons.right, activeAttackButtons[0]], // Charge B-F
-        [inputButtons.down, inputButtons.up, activeAttackButtons[0]], // Charge D-U
+        [inputButtons.left, inputButtons.right], // Charge B-F
+        [inputButtons.down, inputButtons.up], // Charge D-U
+        [inputButtons.left, activeAttackButtons[0]], // Left + attack
+        [inputButtons.right, activeAttackButtons[0]], // Right + attack
+        [inputButtons.up, activeAttackButtons[0]], // Up + attack
+        [inputButtons.down, activeAttackButtons[0]], // Down + attack
         // 3-input quarter circles (Hard)
         [inputButtons.down, inputButtons.right, activeAttackButtons[0]], // QCF + LP
         [inputButtons.down, inputButtons.right, activeAttackButtons[1]], // QCF + MP

@@ -142,19 +142,15 @@ export const useTrainingStore = create(
       },
       
       updateSessionScore: (scoreUpdate) => {
-        console.log('🔄 updateSessionScore called with:', scoreUpdate)
         const { currentSession } = get()
         if (!currentSession) {
-          console.log('❌ No current session, cannot update score')
           return
         }
         
-        console.log('📊 Current session score before update:', currentSession.score)
         const updatedScore = {
           ...currentSession.score,
           ...scoreUpdate
         }
-        console.log('📊 Updated session score:', updatedScore)
         
         set({
           currentSession: {
