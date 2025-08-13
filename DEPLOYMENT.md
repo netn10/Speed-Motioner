@@ -105,6 +105,40 @@ The project includes several deployment scripts for different use cases:
 .\deploy.ps1 -Force
 ```
 
+### 2. PowerShell Script with Retry Logic (Windows) - `deploy-with-retry.ps1`
+
+**Features:**
+- All features of the basic deployment script
+- Automatic retry logic for failed operations
+- Frontend build and copy automation
+- Deployment verification
+- Comprehensive error handling
+
+**Usage:**
+```powershell
+# Basic deployment with retry logic
+.\deploy-with-retry.ps1
+
+# Skip tests and use retry logic
+.\deploy-with-retry.ps1 -SkipTests
+
+# Custom retry count
+.\deploy-with-retry.ps1 -MaxRetries 5
+```
+
+### 3. Batch Script (Windows) - `deploy-auto.bat`
+
+**Features:**
+- Simple one-click deployment
+- Runs the retry-enabled PowerShell script
+- User-friendly output
+- Automatic error handling
+
+**Usage:**
+```cmd
+deploy-auto.bat
+```
+
 ### 2. Bash Script (Cross-platform) - `deploy.sh`
 
 **Features:**
@@ -155,6 +189,12 @@ deploy.bat
 ```bash
 # Full deployment using PowerShell script
 npm run deploy
+
+# Deployment with retry logic (recommended)
+npm run deploy:retry
+
+# One-click auto deployment (Windows)
+npm run deploy:auto
 
 # Deploy to GitHub only
 npm run deploy:github
