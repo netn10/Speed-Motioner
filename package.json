@@ -24,7 +24,7 @@
     "deploy:auto": "deploy-auto.bat",
     "deploy:github": "git add . && git commit -m \"Auto-deploy: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')\" && git push origin main",
     "deploy:heroku": "git push heroku main",
-    "deploy:full": "npm run build && npm run deploy:github && npm run deploy:heroku",
+    "deploy:full": "npm run build:local && npm run deploy:github && npm run deploy:heroku",
     "setup:heroku": "heroku buildpacks:clear --app speed-motioner && heroku buildpacks:add heroku/nodejs --app speed-motioner"
   },
   "dependencies": {

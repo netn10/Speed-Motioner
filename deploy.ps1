@@ -120,7 +120,42 @@ function Start-Deployment {
     # Build frontend (unless skipped)
     if (-not $SkipBuild) {
         Write-ColorOutput "`n[INFO] Building frontend..." $Blue
-        Invoke-CommandSafe "npm run build" "Building frontend"
+        
+        # Clean previous build
+        Write-ColorOutput "[INFO] Cleaning previous build..." $Blue
+        if (Test-Path "frontend\dist") {
+            Remove-Item "frontend\dist" -Recurse -Force
+        }
+        if (Test-Path "backend\public") {
+            Remove-Item "backend\public" -Recurse -Force
+        }
+        
+        # Build frontend
+        Invoke-CommandSafe "npm run build:local" "Building frontend"
+        
+        # Check if build was successful
+        if (-not (Test-Path "frontend\dist\index.html")) {
+            Write-ColorOutput "[ERROR] Frontend build failed - index.html not found" $Red
+            exit 1
+        }
+        
+        # Create backend/public directory if it doesn't exist
+        if (-not (Test-Path "backend\public")) {
+            Write-ColorOutput "[INFO] Creating backend/public directory..." $Blue
+            New-Item -ItemType Directory -Path "backend\public" -Force | Out-Null
+        }
+        
+        # Copy build files to backend
+        Write-ColorOutput "[INFO] Copying build files to backend..." $Blue
+        Invoke-CommandSafe "xcopy frontend\dist\* backend\public\ /E /Y" "Copying frontend files to backend"
+        
+        # Verify files were copied
+        if (-not (Test-Path "backend\public\index.html")) {
+            Write-ColorOutput "[ERROR] Failed to copy frontend files to backend" $Red
+            exit 1
+        }
+        
+        Write-ColorOutput "[SUCCESS] Frontend build and copy completed" $Green
     } else {
         Write-ColorOutput "`n[SKIP] Skipping build..." $Yellow
     }

@@ -44,7 +44,7 @@ echo.
 
 REM Build frontend
 echo 🔨 Building frontend...
-call npm run build
+call npm run build:local
 if errorlevel 1 (
     echo ❌ Build failed
     pause

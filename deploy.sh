@@ -165,7 +165,7 @@ main() {
     # Build frontend (unless skipped)
     if [ "$SKIP_BUILD" = false ]; then
         print_color "$BLUE" "\n🔨 Building frontend..."
-        run_command "npm run build" "Building frontend"
+        run_command "npm run build:local" "Building frontend"
     else
         print_color "$YELLOW" "\n⏭️ Skipping build..."
     fi
