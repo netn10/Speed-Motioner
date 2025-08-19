@@ -4,7 +4,7 @@ import { useTrainingStore } from '../stores/trainingStore'
 import { useInputButtons } from '../hooks/useInputButtons'
 import { useSettingsStore } from '../stores/settingsStore'
 import { generateDifficultyBasedPatterns } from '../utils/motionInputs'
-import { generateRealComboTrainingPatterns, getCombosByDifficulty } from '../utils/realCombos'
+// import { generateRealComboTrainingPatterns, getCombosByDifficulty } from '../utils/realCombos'
 import './TrainingInputDisplay.css'
 
 const TrainingInputDisplay = () => {
@@ -119,34 +119,19 @@ const TrainingInputDisplay = () => {
       }
     })
     
-    // For combos mode, use real fighting game combos
+    // For combos mode, use simple fallback for now (real combos temporarily disabled)
     patterns['combos'] = (() => {
       try {
-        const realCombos = generateRealComboTrainingPatterns(inputButtons, activeAttackButtons, difficulty)
-        if (realCombos && realCombos.length > 0) {
-          // Return both the patterns and combo info for display
-          return realCombos.map(combo => ({
-            pattern: combo.convertedInputs || [inputButtons.up],
-            comboInfo: combo
-          })).filter(item => item.pattern && item.pattern.length > 0)
-        } else {
-          throw new Error('No real combos generated')
-        }
+        const fallbackPatterns = generateDifficultyBasedPatterns(inputButtons, activeAttackButtons, 'combos', difficulty)
+        return (fallbackPatterns || []).map(pattern => ({ pattern, comboInfo: null }))
       } catch (error) {
-        console.warn('Failed to load real combos, using fallback:', error)
-        // Fallback to basic patterns if real combos fail
-        try {
-          const fallbackPatterns = generateDifficultyBasedPatterns(inputButtons, activeAttackButtons, 'combos', difficulty)
-          return (fallbackPatterns || []).map(pattern => ({ pattern, comboInfo: null }))
-        } catch (fallbackError) {
-          console.warn('Fallback patterns also failed:', fallbackError)
-          // Ultimate fallback
-          return [
-            { pattern: [inputButtons.up], comboInfo: null },
-            { pattern: [inputButtons.down], comboInfo: null },
-            { pattern: [activeAttackButtons[0]], comboInfo: null }
-          ]
-        }
+        console.warn('Pattern generation failed:', error)
+        // Ultimate fallback
+        return [
+          { pattern: [inputButtons.up], comboInfo: null },
+          { pattern: [inputButtons.down], comboInfo: null },
+          { pattern: [activeAttackButtons[0]], comboInfo: null }
+        ]
       }
     })()
     

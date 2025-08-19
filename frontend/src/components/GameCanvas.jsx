@@ -12,7 +12,6 @@ import TrainingInputDisplay from './TrainingInputDisplay'
 import GamepadStatus from './GamepadStatus'
 import MobileControls from './MobileControls'
 import { isMobile, isTablet } from '../utils/deviceDetection'
-import { generateRealComboTrainingPatterns, getCombosByDifficulty } from '../utils/realCombos'
 import './GameCanvas.css'
 
 const GameCanvas = () => {
