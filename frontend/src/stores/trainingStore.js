@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { useAchievementStore } from './achievementStore'
+import { useSettingsStore } from './settingsStore'
 
 export const useTrainingStore = create(
   persist(
@@ -137,6 +139,21 @@ export const useTrainingStore = create(
           sessions: updatedSessions,
           leaderboard: updatedLeaderboard
         })
+        
+        // Update achievements after session completion
+        try {
+          const achievementStore = useAchievementStore.getState()
+          const settingsStore = useSettingsStore.getState()
+          
+          achievementStore.updateStats({
+            ...completedSession.score,
+            mode: completedSession.mode,
+            difficulty: completedSession.difficulty,
+            timeElapsed: completedSession.score.timeElapsed
+          })
+        } catch (error) {
+          console.warn('Failed to update achievements:', error)
+        }
         
         return completedSession
       },

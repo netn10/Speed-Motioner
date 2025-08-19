@@ -4,6 +4,8 @@ import GameCanvas from './components/GameCanvas'
 import TrainingMenu from './components/TrainingMenu'
 import Settings from './components/Settings'
 import Leaderboard from './components/Leaderboard'
+import AchievementsPanel from './components/AchievementsPanel'
+import AchievementNotification from './components/AchievementNotification'
 import { useSettingsStore } from './stores/settingsStore'
 import './App.css'
 
@@ -52,8 +54,10 @@ function App() {
             <Route path="/game" element={<GameCanvas />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/achievements" element={<AchievementsPanel />} />
           </Routes>
         </main>
+        <AchievementNotification />
       </div>
     </Router>
   )

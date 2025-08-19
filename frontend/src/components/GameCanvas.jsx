@@ -10,6 +10,9 @@ import InputDisplay from './InputDisplay'
 import ScoreDisplay from './ScoreDisplay'
 import TrainingInputDisplay from './TrainingInputDisplay'
 import GamepadStatus from './GamepadStatus'
+import MobileControls from './MobileControls'
+import { isMobile, isTablet } from '../utils/deviceDetection'
+import { generateRealComboTrainingPatterns, getCombosByDifficulty } from '../utils/realCombos'
 import './GameCanvas.css'
 
 const GameCanvas = () => {
@@ -42,6 +45,7 @@ const GameCanvas = () => {
 
   const [showEndDialog, setShowEndDialog] = useState(false)
   const [completedSession, setCompletedSession] = useState(null)
+  const [showMobileControls, setShowMobileControls] = useState(false)
   const previousScoreRef = useRef(null)
 
   // Initialize game state when component mounts
@@ -55,6 +59,18 @@ const GameCanvas = () => {
       resetGame()
     }
   }, [setGameState, resetGame, isTraining, currentSession, startSession])
+
+  // Check for mobile device and show mobile controls
+  useEffect(() => {
+    const checkMobile = () => {
+      setShowMobileControls(isMobile() || isTablet())
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Real-time timer effect - updates every second
   useEffect(() => {
@@ -350,6 +366,14 @@ const GameCanvas = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Mobile Controls */}
+      {showMobileControls && gameState === 'playing' && (
+        <MobileControls 
+          onInput={handleInputForTraining}
+          disabled={!isTraining && gameState !== 'playing'}
+        />
       )}
     </div>
   )

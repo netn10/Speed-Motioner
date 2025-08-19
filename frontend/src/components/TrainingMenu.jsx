@@ -28,7 +28,7 @@ const TrainingMenu = () => {
   const trainingModes = [
     { id: 'motion', name: 'Basic Motion', description: 'Practice basic movement and attack inputs' },
     { id: 'motions', name: 'Fighting Game Motions', description: 'Practice QCF, QCB, DP, HCF, HCB, Charge, and Double motions' },
-    { id: 'combos', name: 'Combo Training', description: 'Practice hit confirms and combos' },
+    { id: 'combos', name: 'Real Combo Training', description: 'Practice authentic fighting game combos (Hadoken, Shoryuken, etc.)' },
     { id: 'custom', name: 'Custom Challenge', description: 'Custom difficulty challenge mode' },
     { id: 'custom-combos', name: 'Custom Combos', description: 'Practice your own saved combos' }
   ]
@@ -129,6 +129,9 @@ const TrainingMenu = () => {
         <div className="menu-header">
           <h2>Select Training Mode</h2>
           <div className="header-buttons">
+            <button className="achievements-button" onClick={() => navigate('/achievements')}>
+              🏅 Achievements
+            </button>
             <button className="leaderboard-button" onClick={() => navigate('/leaderboard')}>
               🏆 Leaderboard
             </button>
@@ -137,6 +140,7 @@ const TrainingMenu = () => {
             </button>
           </div>
         </div>
+
 
         <div className="mode-selection">
           <h3>Training Type</h3>

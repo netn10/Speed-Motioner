@@ -4,6 +4,7 @@ import { useTrainingStore } from '../stores/trainingStore'
 import { useInputButtons } from '../hooks/useInputButtons'
 import { useSettingsStore } from '../stores/settingsStore'
 import { generateDifficultyBasedPatterns } from '../utils/motionInputs'
+import { generateRealComboTrainingPatterns, getCombosByDifficulty } from '../utils/realCombos'
 import './TrainingInputDisplay.css'
 
 const TrainingInputDisplay = () => {
@@ -22,6 +23,7 @@ const TrainingInputDisplay = () => {
   const [showCountdown, setShowCountdown] = useState(true) // New state for countdown
   const [countdownNumber, setCountdownNumber] = useState(3) // Countdown number
   const [hasShownCountdown, setHasShownCountdown] = useState(false) // Track if countdown has been shown
+  const [currentComboInfo, setCurrentComboInfo] = useState(null) // Track real combo information
   const timerRef = useRef(null)
   const timeoutRef = useRef(null)
   const inputStartTimeRef = useRef(null)
@@ -107,15 +109,41 @@ const TrainingInputDisplay = () => {
     const patterns = {}
     
     // Generate patterns for each training mode using difficulty-based filtering
-    const modes = ['motion', 'motions', 'combos', 'custom']
+    const modes = ['motion', 'motions', 'custom']
     modes.forEach(mode => {
       patterns[mode] = generateDifficultyBasedPatterns(inputButtons, activeAttackButtons, mode, difficulty)
     })
     
+    // For combos mode, use real fighting game combos
+    patterns['combos'] = (() => {
+      try {
+        const realCombos = generateRealComboTrainingPatterns(inputButtons, activeAttackButtons, difficulty)
+        // Return both the patterns and combo info for display
+        return realCombos.map(combo => ({
+          pattern: combo.convertedInputs,
+          comboInfo: combo
+        }))
+      } catch (error) {
+        console.warn('Failed to load real combos, using fallback:', error)
+        // Fallback to basic patterns if real combos fail
+        return generateDifficultyBasedPatterns(inputButtons, activeAttackButtons, 'combos', difficulty)
+          .map(pattern => ({ pattern, comboInfo: null }))
+      }
+    })()
+    
     // Handle custom-combos separately since it uses specific custom combo data
     patterns['custom-combos'] = (() => {
       if (currentSession?.customConfig?.customCombo) {
-        return [currentSession.customConfig.customCombo.inputs]
+        return [{ 
+          pattern: currentSession.customConfig.customCombo.inputs,
+          comboInfo: {
+            name: currentSession.customConfig.customCombo.name,
+            description: currentSession.customConfig.customCombo.description,
+            notation: currentSession.customConfig.customCombo.inputs.join(' → '),
+            type: 'Custom',
+            difficulty: 'Custom'
+          }
+        }]
       }
       return []
     })()
@@ -155,17 +183,29 @@ const TrainingInputDisplay = () => {
     startNewInputCallCount.current += 1
 
     const patterns = trainingPatterns[trainingMode] || trainingPatterns.motion
-    let selectedPattern
+    let selectedItem
 
     // For custom combos, always use the same pattern (the selected custom combo)
     if (trainingMode === 'custom-combos') {
-      selectedPattern = patterns[0] // Custom combos only have one pattern
+      selectedItem = patterns[0] // Custom combos only have one pattern
     } else {
       const randomIndex = Math.floor(Math.random() * patterns.length)
-      selectedPattern = patterns[randomIndex]
+      selectedItem = patterns[randomIndex]
+    }
+
+    // Handle both old format (just arrays) and new format (objects with pattern and comboInfo)
+    let selectedPattern
+    let comboInfo = null
+    
+    if (selectedItem && typeof selectedItem === 'object' && selectedItem.pattern) {
+      selectedPattern = selectedItem.pattern
+      comboInfo = selectedItem.comboInfo
+    } else {
+      selectedPattern = selectedItem
     }
 
     setCurrentInput(selectedPattern)
+    setCurrentComboInfo(comboInfo)
     setInputIndex(0)
     setIsCompleted(false)
     setShowFeedback(null)
@@ -566,17 +606,34 @@ const TrainingInputDisplay = () => {
 
       <div className="input-instruction">
         <span className="instruction-text">Perform this input:</span>
+        
+        {/* Real combo information for combos mode */}
+        {trainingMode === 'combos' && currentComboInfo && (
+          <div className="real-combo-info">
+            <div className="combo-name">{currentComboInfo.name}</div>
+            <div className="combo-notation">{currentComboInfo.notation}</div>
+            <div className="combo-description">{currentComboInfo.description}</div>
+            <div className="combo-meta">
+              <span className="combo-difficulty">{currentComboInfo.difficulty}</span>
+              <span className="combo-type">{currentComboInfo.type}</span>
+            </div>
+          </div>
+        )}
+        
+        {/* Motion pattern names for motions mode */}
         {trainingMode === 'motions' && getMotionPatternName(currentInput) && (
           <div className="motion-pattern-name">
             {getMotionPatternName(currentInput)}
           </div>
         )}
-        {trainingMode === 'custom-combos' && currentSession?.customConfig?.customCombo && (
+        
+        {/* Custom combo information */}
+        {trainingMode === 'custom-combos' && currentComboInfo && (
           <div className="custom-combo-name">
-            {currentSession.customConfig.customCombo.name}
-            {currentSession.customConfig.customCombo.description && (
+            {currentComboInfo.name}
+            {currentComboInfo.description && (
               <div className="custom-combo-description">
-                {currentSession.customConfig.customCombo.description}
+                {currentComboInfo.description}
               </div>
             )}
           </div>

@@ -1,0 +1,396 @@
+.visual-feedback {
+  position: fixed;
+  z-index: 2000;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.visual-feedback.position-center {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.visual-feedback.position-top {
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.visual-feedback.position-bottom {
+  bottom: 20%;
+  left: 50%;
+  transform: translate(-50%, 50%);
+}
+
+.visual-feedback.fade-out {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.8);
+}
+
+.feedback-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 2rem;
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  animation: feedbackAppear 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  position: relative;
+  overflow: hidden;
+}
+
+.feedback-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 20px;
+  padding: 2px;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: subtract;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: subtract;
+}
+
+/* Hit feedback */
+.visual-feedback.hit .feedback-content {
+  background: rgba(78, 205, 196, 0.9);
+  border: 2px solid rgba(78, 205, 196, 0.5);
+  color: white;
+}
+
+/* Miss feedback */
+.visual-feedback.miss .feedback-content {
+  background: rgba(255, 107, 107, 0.9);
+  border: 2px solid rgba(255, 107, 107, 0.5);
+  color: white;
+}
+
+/* Perfect feedback */
+.visual-feedback.perfect .feedback-content {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.95), rgba(255, 193, 7, 0.95));
+  border: 2px solid rgba(255, 215, 0, 0.7);
+  color: #333;
+  animation: perfectPulse 0.6s ease-in-out;
+}
+
+/* Combo feedback */
+.visual-feedback.combo .feedback-content {
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.95), rgba(255, 193, 7, 0.95));
+  border: 2px solid rgba(255, 107, 107, 0.7);
+  color: white;
+  animation: comboBounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Achievement feedback */
+.visual-feedback.achievement .feedback-content {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.95), rgba(255, 215, 0, 0.95));
+  border: 2px solid rgba(76, 175, 80, 0.7);
+  color: white;
+  animation: achievementCelebration 1s ease-in-out;
+}
+
+.feedback-icon {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  animation: iconSpin 0.6s ease-in-out;
+}
+
+.visual-feedback.perfect .feedback-icon,
+.visual-feedback.achievement .feedback-icon {
+  animation: iconBounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.feedback-message {
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-align: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Particles */
+.particles-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  animation: particleFloat 2s ease-out forwards;
+  opacity: 0;
+}
+
+/* Achievement special effects */
+.achievement-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200px;
+  height: 200px;
+  pointer-events: none;
+}
+
+.achievement-rays {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  animation: rayRotate 2s linear infinite;
+}
+
+.ray {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 60px;
+  background: linear-gradient(0deg, transparent, rgba(255, 215, 0, 0.8), transparent);
+  transform-origin: center bottom;
+  margin-left: -2px;
+  margin-top: -60px;
+  animation: rayPulse 1s ease-in-out infinite alternate;
+}
+
+/* Combo special effects */
+.combo-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.combo-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+  border: 3px solid rgba(255, 107, 107, 0.6);
+  border-radius: 50%;
+  animation: ringExpand 0.6s ease-out forwards;
+}
+
+.combo-ring.delayed {
+  animation-delay: 0.2s;
+  border-color: rgba(255, 193, 7, 0.6);
+}
+
+/* Feedback renderer */
+.feedback-renderer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2000;
+}
+
+/* Animations */
+@keyframes feedbackAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translateY(-20px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.1) translateY(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes perfectPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 20px 40px rgba(255, 215, 0, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 25px 50px rgba(255, 215, 0, 0.5);
+  }
+}
+
+@keyframes comboBounce {
+  0% {
+    transform: scale(0.3) rotate(-10deg);
+  }
+  50% {
+    transform: scale(1.2) rotate(5deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes achievementCelebration {
+  0% {
+    transform: scale(0.5) rotate(-20deg);
+    opacity: 0;
+  }
+  30% {
+    transform: scale(1.2) rotate(10deg);
+    opacity: 1;
+  }
+  60% {
+    transform: scale(0.9) rotate(-5deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes iconSpin {
+  0% {
+    transform: rotate(-180deg) scale(0.5);
+    opacity: 0;
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes iconBounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  40% {
+    transform: translateY(-10px) scale(1.1);
+  }
+  60% {
+    transform: translateY(-5px) scale(1.05);
+  }
+}
+
+@keyframes particleFloat {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100px) scale(0.5) rotate(180deg);
+  }
+}
+
+@keyframes rayRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rayPulse {
+  from {
+    opacity: 0.5;
+    transform: scaleY(1);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1.2);
+  }
+}
+
+@keyframes ringExpand {
+  0% {
+    width: 50px;
+    height: 50px;
+    opacity: 1;
+  }
+  100% {
+    width: 150px;
+    height: 150px;
+    opacity: 0;
+  }
+}
+
+/* Theme variations */
+.visual-feedback.light .feedback-content {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.visual-feedback.dark .feedback-content {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .feedback-content {
+    padding: 0.75rem 1.5rem;
+  }
+
+  .feedback-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .feedback-message {
+    font-size: 1rem;
+    letter-spacing: 1px;
+  }
+
+  .achievement-effect {
+    width: 150px;
+    height: 150px;
+  }
+
+  .ray {
+    height: 40px;
+    margin-top: -40px;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .feedback-content {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  
+  .visual-feedback.hit .feedback-content {
+    background: #00ff00;
+    color: #000;
+  }
+  
+  .visual-feedback.miss .feedback-content {
+    background: #ff0000;
+    color: #fff;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .visual-feedback,
+  .feedback-content,
+  .feedback-icon,
+  .particle,
+  .achievement-rays,
+  .ray,
+  .combo-ring {
+    animation: none !important;
+    transition: opacity 0.3s ease !important;
+  }
+}

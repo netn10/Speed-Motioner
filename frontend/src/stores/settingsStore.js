@@ -13,6 +13,7 @@ export const useSettingsStore = create(
       // Attack display mode: 'text' or 'icons'
       attackDisplayMode: 'icons', // 'text' or 'icons'
       
+      
       // Input button settings
       inputButtons: {
         up: 'w',
@@ -64,6 +65,7 @@ export const useSettingsStore = create(
       setAttackButtonMode: (mode) => set({ attackButtonMode: mode }),
       
       setAttackDisplayMode: (mode) => set({ attackDisplayMode: mode }),
+      
       
       setInputButton: (action, button) => set((state) => ({
         inputButtons: {

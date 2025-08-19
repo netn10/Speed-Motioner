@@ -597,6 +597,52 @@ export const generateDifficultyBasedPatterns = (inputButtons, activeAttackButton
   return filteredPatterns
 }
 
+// Create combo success notification data
+export const createComboSuccessNotification = (comboName, notation, type) => {
+  return {
+    title: `${comboName} Success!`,
+    message: notation || 'Combo completed',
+    type: type || 'combo',
+    duration: 2000,
+    color: type === 'Super' ? '#FFD700' : type === 'Special' ? '#FF6B6B' : '#4ECDC4'
+  }
+}
+
+// Check if a completed pattern matches a real combo for notification
+export const getComboNotificationForPattern = (completedPattern, inputButtons, attackButtons) => {
+  // This would integrate with realCombos.js to identify which real combo was completed
+  // For now, return a generic notification for motion patterns
+  
+  // Check for common motion patterns
+  const patternString = completedPattern.join(',')
+  
+  // QCF pattern
+  if (patternString.includes(`${inputButtons.down},${inputButtons.right}`) && 
+      completedPattern.some(input => attackButtons.includes(input))) {
+    return createComboSuccessNotification('Hadoken Style', '236+P', 'Special')
+  }
+  
+  // DP pattern  
+  if (patternString.includes(`${inputButtons.right},${inputButtons.down},${inputButtons.right}`) &&
+      completedPattern.some(input => attackButtons.includes(input))) {
+    return createComboSuccessNotification('Dragon Punch Style', '623+P', 'Special')
+  }
+  
+  // QCB pattern
+  if (patternString.includes(`${inputButtons.down},${inputButtons.left}`) &&
+      completedPattern.some(input => attackButtons.includes(input))) {
+    return createComboSuccessNotification('Tatsumaki Style', '214+K', 'Special') 
+  }
+  
+  // Double QCF pattern
+  if (patternString.split(`${inputButtons.down},${inputButtons.right}`).length > 2 &&
+      completedPattern.some(input => attackButtons.includes(input))) {
+    return createComboSuccessNotification('Super Move Style', '236236+P', 'Super')
+  }
+  
+  return null
+}
+
 export default {
   MOTION_PATTERNS,
   MOTION_NAMES,
@@ -612,5 +658,7 @@ export default {
   generateCustomTrainingPatterns,
   createMotionDisplay,
   filterPatternsByDifficulty,
-  generateDifficultyBasedPatterns
+  generateDifficultyBasedPatterns,
+  createComboSuccessNotification,
+  getComboNotificationForPattern
 }
