@@ -413,18 +413,35 @@ export const getRandomComboByDifficulty = (difficulty) => {
 
 // Create training patterns from real combos
 export const generateRealComboTrainingPatterns = (inputButtons, attackButtons, difficulty = 'medium') => {
+  // Safety checks
+  if (!inputButtons || !attackButtons) {
+    console.warn('Invalid parameters for generateRealComboTrainingPatterns')
+    return []
+  }
+  
+  // Ensure we have enough attack buttons
+  const safeAttackButtons = [...attackButtons]
+  while (safeAttackButtons.length < 6) {
+    safeAttackButtons.push(safeAttackButtons[0] || 'Space') // Use first button or Space as fallback
+  }
+  
   const combos = getCombosByDifficulty(difficulty)
+  
+  if (!combos || combos.length === 0) {
+    console.warn('No combos found for difficulty:', difficulty)
+    return []
+  }
   
   return combos.map(combo => {
     const inputs = convertComboToInputs(combo, inputButtons, {
-      lp: attackButtons[0],
-      mp: attackButtons[1], 
-      hp: attackButtons[2],
-      lk: attackButtons[3],
-      mk: attackButtons[4],
-      hk: attackButtons[5],
-      rp: attackButtons[1], // Tekken style
-      rk: attackButtons[3]
+      lp: safeAttackButtons[0],
+      mp: safeAttackButtons[1], 
+      hp: safeAttackButtons[2],
+      lk: safeAttackButtons[3],
+      mk: safeAttackButtons[4],
+      hk: safeAttackButtons[5],
+      rp: safeAttackButtons[1], // Tekken style
+      rk: safeAttackButtons[3]
     })
     
     return {

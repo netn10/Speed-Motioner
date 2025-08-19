@@ -111,23 +111,42 @@ const TrainingInputDisplay = () => {
     // Generate patterns for each training mode using difficulty-based filtering
     const modes = ['motion', 'motions', 'custom']
     modes.forEach(mode => {
-      patterns[mode] = generateDifficultyBasedPatterns(inputButtons, activeAttackButtons, mode, difficulty)
+      try {
+        patterns[mode] = generateDifficultyBasedPatterns(inputButtons, activeAttackButtons, mode, difficulty) || []
+      } catch (error) {
+        console.warn(`Error generating patterns for ${mode}:`, error)
+        patterns[mode] = [[inputButtons.up]] // Basic fallback
+      }
     })
     
     // For combos mode, use real fighting game combos
     patterns['combos'] = (() => {
       try {
         const realCombos = generateRealComboTrainingPatterns(inputButtons, activeAttackButtons, difficulty)
-        // Return both the patterns and combo info for display
-        return realCombos.map(combo => ({
-          pattern: combo.convertedInputs,
-          comboInfo: combo
-        }))
+        if (realCombos && realCombos.length > 0) {
+          // Return both the patterns and combo info for display
+          return realCombos.map(combo => ({
+            pattern: combo.convertedInputs || [inputButtons.up],
+            comboInfo: combo
+          })).filter(item => item.pattern && item.pattern.length > 0)
+        } else {
+          throw new Error('No real combos generated')
+        }
       } catch (error) {
         console.warn('Failed to load real combos, using fallback:', error)
         // Fallback to basic patterns if real combos fail
-        return generateDifficultyBasedPatterns(inputButtons, activeAttackButtons, 'combos', difficulty)
-          .map(pattern => ({ pattern, comboInfo: null }))
+        try {
+          const fallbackPatterns = generateDifficultyBasedPatterns(inputButtons, activeAttackButtons, 'combos', difficulty)
+          return (fallbackPatterns || []).map(pattern => ({ pattern, comboInfo: null }))
+        } catch (fallbackError) {
+          console.warn('Fallback patterns also failed:', fallbackError)
+          // Ultimate fallback
+          return [
+            { pattern: [inputButtons.up], comboInfo: null },
+            { pattern: [inputButtons.down], comboInfo: null },
+            { pattern: [activeAttackButtons[0]], comboInfo: null }
+          ]
+        }
       }
     })()
     
@@ -182,7 +201,16 @@ const TrainingInputDisplay = () => {
     
     startNewInputCallCount.current += 1
 
-    const patterns = trainingPatterns[trainingMode] || trainingPatterns.motion
+    const patterns = trainingPatterns[trainingMode] || trainingPatterns.motion || []
+    
+    // Safety check - ensure we have patterns
+    if (!patterns || patterns.length === 0) {
+      console.warn('No training patterns available, using fallback');
+      setCurrentInput([inputButtons.up]) // Basic fallback
+      setCurrentComboInfo(null)
+      return
+    }
+    
     let selectedItem
 
     // For custom combos, always use the same pattern (the selected custom combo)
@@ -191,6 +219,14 @@ const TrainingInputDisplay = () => {
     } else {
       const randomIndex = Math.floor(Math.random() * patterns.length)
       selectedItem = patterns[randomIndex]
+    }
+
+    // Safety check for selected item
+    if (!selectedItem) {
+      console.warn('No selected item available, using fallback');
+      setCurrentInput([inputButtons.up])
+      setCurrentComboInfo(null)
+      return
     }
 
     // Handle both old format (just arrays) and new format (objects with pattern and comboInfo)
@@ -202,6 +238,14 @@ const TrainingInputDisplay = () => {
       comboInfo = selectedItem.comboInfo
     } else {
       selectedPattern = selectedItem
+    }
+
+    // Final safety check for pattern
+    if (!selectedPattern || !Array.isArray(selectedPattern) || selectedPattern.length === 0) {
+      console.warn('Invalid selected pattern, using fallback');
+      setCurrentInput([inputButtons.up])
+      setCurrentComboInfo(null)
+      return
     }
 
     setCurrentInput(selectedPattern)
